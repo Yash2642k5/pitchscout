@@ -1,0 +1,13 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google_finance", "q": "TRI:NYSE"},
+  "summary": {
+    "title": "Thomson Reuters Corp",
+    "stock": "TRI:NYSE",
+    "price": 178.42,
+    "currency": "USD",
+    "price_change": 1.15,
+    "price_change_percent": "0.65%",
+    "market": {"market_cap": "73.2B USD"}
+  }
+}

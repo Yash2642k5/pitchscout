@@ -1,0 +1,20 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google_news", "q": "AI legal research assistant"},
+  "news_results": [
+    {
+      "title": "AI legal research tools see surge in adoption among mid-size firms",
+      "link": "https://legaltechreview.com/ai-legal-research-adoption-2026",
+      "source": {"name": "Legal Tech Review"},
+      "snippet": "Mid-size law firms are adopting AI legal research assistants at twice the rate of 2024, driven by billing pressure.",
+      "date": "01/15/2026"
+    },
+    {
+      "title": "Bar associations weigh new rules for AI legal research tools",
+      "link": "https://abajournal.com/ai-legal-research-rules",
+      "source": {"name": "ABA Journal"},
+      "snippet": "Several state bar associations are drafting guidance on disclosure requirements for AI legal research assistants.",
+      "date": "12/02/2025"
+    }
+  ]
+}

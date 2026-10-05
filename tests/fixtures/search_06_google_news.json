@@ -1,0 +1,20 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google_news", "q": "\"Acme AI\" funding OR raises OR investors"},
+  "news_results": [
+    {
+      "title": "Acme AI raises $14M Series A to expand legal AI assistant",
+      "link": "https://techcrunch.com/2025/11/20/acme-ai-series-a/",
+      "source": {"name": "TechCrunch"},
+      "snippet": "The round was led by Northbridge Ventures, with Eastgate Capital and angel investor Marcus Lee also participating.",
+      "date": "11/20/2025"
+    },
+    {
+      "title": "Northbridge Ventures backs legal AI startup Acme AI",
+      "link": "https://venturebeat.com/acme-ai-northbridge/",
+      "source": {"name": "VentureBeat"},
+      "snippet": "Northbridge Ventures led the $14M round, its first investment in legal technology.",
+      "date": "11/21/2025"
+    }
+  ]
+}

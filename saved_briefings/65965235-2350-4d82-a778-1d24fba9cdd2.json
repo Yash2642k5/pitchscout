@@ -1,0 +1,905 @@
+{
+  "id": "65965235-2350-4d82-a778-1d24fba9cdd2",
+  "company": "Acme AI",
+  "website": "https://acme.ai",
+  "category": "AI legal research assistant",
+  "generated_at": "2026-10-05T16:40:59.315601+00:00",
+  "searches": [
+    {
+      "number": 1,
+      "engine": "google",
+      "query": "\"Acme AI\" AI legal research assistant",
+      "status": "live",
+      "result_count": 4
+    },
+    {
+      "number": 2,
+      "engine": "google",
+      "query": "\"Acme AI\" founder OR co-founder OR CEO",
+      "status": "live",
+      "result_count": 2
+    },
+    {
+      "number": 3,
+      "engine": "google",
+      "query": "Acme AI competitors alternatives",
+      "status": "live",
+      "result_count": 4
+    },
+    {
+      "number": 4,
+      "engine": "google",
+      "query": "Acme AI pricing plans",
+      "status": "live",
+      "result_count": 2
+    },
+    {
+      "number": 5,
+      "engine": "google_news",
+      "query": "\"Acme AI\"",
+      "status": "live",
+      "result_count": 3
+    },
+    {
+      "number": 6,
+      "engine": "google_news",
+      "query": "\"Acme AI\" funding OR raises OR investors",
+      "status": "live",
+      "result_count": 2
+    },
+    {
+      "number": 7,
+      "engine": "google_news",
+      "query": "AI legal research assistant",
+      "status": "live",
+      "result_count": 2
+    },
+    {
+      "number": 8,
+      "engine": "google_jobs",
+      "query": "Acme AI",
+      "status": "live",
+      "result_count": 5
+    },
+    {
+      "number": 9,
+      "engine": "google_trends",
+      "query": "Acme AI,AI legal research assistant",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 10,
+      "engine": "google_play",
+      "query": "Acme AI",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 11,
+      "engine": "google_shopping",
+      "query": "Acme AI",
+      "status": "empty",
+      "result_count": 0
+    },
+    {
+      "number": 12,
+      "engine": "google",
+      "query": "LexBrief pricing plans",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 13,
+      "engine": "google",
+      "query": "CaseMind pricing plans",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 14,
+      "engine": "google",
+      "query": "StatuteIQ pricing plans",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 15,
+      "engine": "google_finance",
+      "query": "",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 16,
+      "engine": "google_finance",
+      "query": "",
+      "status": "live",
+      "result_count": 1
+    }
+  ],
+  "company_summary": [
+    {
+      "text": "Acme AI builds an AI\u2011powered legal research assistant for law firms.",
+      "confidence": "Corroborated",
+      "evidence": [
+        "e01",
+        "e03"
+      ]
+    },
+    {
+      "text": "Co\u2011founded by Priya Nair (ex\u2011ML lead at legal database) and Daniel Osei (ex\u2011search infra at Fortune\u00a0500 publisher).",
+      "confidence": "Corroborated",
+      "evidence": [
+        "e05",
+        "e06"
+      ]
+    },
+    {
+      "text": "Raised $14\u202fM Series\u00a0A led by Northbridge Ventures with Eastgate Capital and angel Marcus Lee.",
+      "confidence": "Single source",
+      "evidence": [
+        "e02",
+        "e16"
+      ]
+    },
+    {
+      "text": "5 open role(s) found. Role mix \u2014 Engineering: 1, ML and research: 2 (40%), Sales and marketing: 2, Other: 0.",
+      "confidence": "Single source",
+      "evidence": [
+        "e20",
+        "e21",
+        "e22",
+        "e23",
+        "e24"
+      ]
+    }
+  ],
+  "market": {
+    "verdict": "Expanding",
+    "verdict_text": "Rising adoption and search interest signal a growing market.",
+    "verdict_evidence": [
+      "e18",
+      "e25"
+    ],
+    "points": [
+      {
+        "text": "Mid\u2011size firms adopt AI legal research at twice the 2024 rate.",
+        "confidence": "Single source",
+        "evidence": [
+          "e18"
+        ]
+      },
+      {
+        "text": "Category search interest is increasing (avg 40/100).",
+        "confidence": "Single source",
+        "evidence": [
+          "e25"
+        ]
+      },
+      {
+        "text": "Four active competitors crowd the space.",
+        "confidence": "Corroborated",
+        "evidence": [
+          "e07",
+          "e08",
+          "e09",
+          "e10"
+        ]
+      },
+      {
+        "text": "Bar associations drafting AI disclosure guidance.",
+        "confidence": "Single source",
+        "evidence": [
+          "e19"
+        ]
+      }
+    ]
+  },
+  "competitors": [
+    {
+      "text": "LexBrief offers free tier, $49/mo; CaseMind is enterprise\u2011only via sales; StatuteIQ starts $79/mo with 14\u2011day trial.",
+      "confidence": "Corroborated",
+      "evidence": [
+        "e07",
+        "e08",
+        "e09",
+        "e10"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "category": "legal",
+      "text": "State bar filed privacy complaint alleging prolonged client document retention.",
+      "evidence": [
+        "e13"
+      ]
+    },
+    {
+      "category": "regulatory",
+      "text": "Bar associations drafting AI legal research disclosure guidance.",
+      "evidence": [
+        "e19"
+      ]
+    },
+    {
+      "category": "reputational",
+      "text": "Privacy complaint may damage brand credibility.",
+      "evidence": [
+        "e13"
+      ]
+    },
+    {
+      "category": "competitive",
+      "text": "Free\u2011tier rivals like LexBrief increase price pressure.",
+      "evidence": [
+        "e07"
+      ]
+    },
+    {
+      "category": "other",
+      "text": "Rapid adoption could strain scaling capacity, risking service reliability.",
+      "evidence": [
+        "e18"
+      ]
+    }
+  ],
+  "commercial": {
+    "pricing_comparison": [],
+    "listed_comparables": [],
+    "mismatches": []
+  },
+  "scorecard": [
+    {
+      "dimension": "Team",
+      "score": 4,
+      "rationale": "Founders have strong ML and search background; multiple engineering hires show talent depth.",
+      "evidence": [
+        "e05",
+        "e06",
+        "e20",
+        "e21",
+        "e22",
+        "e23",
+        "e24"
+      ]
+    },
+    {
+      "dimension": "Traction",
+      "score": 3,
+      "rationale": "Early paying customers and Series\u00a0A funding indicate initial market traction.",
+      "evidence": [
+        "e15",
+        "e18",
+        "e02"
+      ]
+    },
+    {
+      "dimension": "Market",
+      "score": 4,
+      "rationale": "Rising interest and several competitors point to an expanding but competitive market.",
+      "evidence": [
+        "e18",
+        "e25",
+        "e07"
+      ]
+    },
+    {
+      "dimension": "Defensibility",
+      "score": 3,
+      "rationale": "Enterprise\u2011grade security and pricing differentiation offer some moat, but few unique barriers evident.",
+      "evidence": [
+        "e01",
+        "e03",
+        "e11"
+      ]
+    },
+    {
+      "dimension": "Risk",
+      "score": 2,
+      "rationale": "Privacy complaint and pending regulatory guidance raise legal and compliance risk.",
+      "evidence": [
+        "e13",
+        "e19"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "no": 1,
+      "item": "Founder names",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e05",
+        "e06"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 2,
+      "item": "Founder prior experience",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e05",
+        "e06"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 3,
+      "item": "Funding round and amount",
+      "priority": 1,
+      "status": "Found",
+      "evidence": [
+        "e02",
+        "e14",
+        "e16"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 4,
+      "item": "Named investors",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e02",
+        "e16"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 5,
+      "item": "Named paying customers",
+      "priority": 1,
+      "status": "Found",
+      "evidence": [
+        "e15"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 6,
+      "item": "Product description from a non-company domain",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e03",
+        "e07"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 7,
+      "item": "ML or research roles among open jobs",
+      "priority": 1,
+      "status": "Found",
+      "evidence": [
+        "e20",
+        "e23"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 8,
+      "item": "At least one open role",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e20"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 9,
+      "item": "Public pricing for the company",
+      "priority": 1,
+      "status": "Found",
+      "evidence": [
+        "e11"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 10,
+      "item": "Pricing for all three competitors",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e08",
+        "e09",
+        "e10"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 11,
+      "item": "Data returned for both listed companies",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e30",
+        "e31"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 12,
+      "item": "Category interest trend",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e25",
+        "e18"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 13,
+      "item": "Press coverage in the last 12 months",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e13",
+        "e14",
+        "e15",
+        "e16",
+        "e17",
+        "e18",
+        "e19"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 14,
+      "item": "App or shopping listing",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e26"
+      ],
+      "question": "",
+      "why": ""
+    }
+  ],
+  "questions": [
+    {
+      "text": "How is Acme addressing the bar association privacy complaint?",
+      "why": "Legal exposure could lead to penalties.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "What steps ensure compliance with upcoming AI disclosure guidelines?",
+      "why": "Regulatory changes may affect product legality.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "How will you mitigate reputational damage from the privacy issue?",
+      "why": "Brand trust is critical for law firms.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "What is your pricing strategy against free\u2011tier competitors?",
+      "why": "Competitive pricing pressure could erode margins.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "Do you have a roadmap for a dedicated enterprise tier?",
+      "why": "Enterprise buyers expect differentiated features.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "How will you scale infrastructure to meet surging demand?",
+      "why": "Service reliability is essential for legal work.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "What data protection measures prevent future client\u2011data complaints?",
+      "why": "Ensuring confidentiality avoids legal risk.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "How will you adapt if bar association regulations tighten?",
+      "why": "Regulatory shifts could require product redesign.",
+      "priority": null,
+      "source": "risk"
+    }
+  ],
+  "evidence": {
+    "e01": {
+      "id": "e01",
+      "search_no": 1,
+      "engine": "google",
+      "title": "Acme AI - Legal Research Assistant for Law Firms",
+      "snippet": "Acme AI builds an AI-powered legal research assistant that helps lawyers find precedent faster. Enterprise-grade security and compliance.",
+      "url": "https://acme.ai/",
+      "source_domain": "acme.ai",
+      "published_date": "2026-01-03",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e02": {
+      "id": "e02",
+      "search_no": 1,
+      "engine": "google",
+      "title": "Acme AI raises $14M Series A to expand legal AI assistant",
+      "snippet": "Acme AI, a startup building an AI legal research assistant, announced a $14M Series A led by Northbridge Ventures.",
+      "url": "https://techcrunch.com/2025/11/20/acme-ai-series-a/",
+      "source_domain": "techcrunch.com",
+      "published_date": "2025-11-20",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e03": {
+      "id": "e03",
+      "search_no": 1,
+      "engine": "google",
+      "title": "Review: Is Acme AI worth it for small law firms?",
+      "snippet": "We tested Acme AI's legal research assistant against three competitors. Pricing starts at $99/month per seat with no published enterprise tier.",
+      "url": "https://legaltechreview.com/acme-ai-review",
+      "source_domain": "legaltechreview.com",
+      "published_date": "2025-12-01",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e04": {
+      "id": "e04",
+      "search_no": 1,
+      "engine": "google",
+      "title": "Acme AI Careers",
+      "snippet": "Join Acme AI. We're hiring engineers and researchers to build the future of legal AI.",
+      "url": "https://acme.ai/careers",
+      "source_domain": "acme.ai",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e05": {
+      "id": "e05",
+      "search_no": 2,
+      "engine": "google",
+      "title": "Acme AI founder Priya Nair on building legal AI tools",
+      "snippet": "Priya Nair, co-founder and CEO of Acme AI, previously led machine learning at a major legal database company before starting Acme AI in 2023.",
+      "url": "https://www.forbes.com/sites/acme-ai-priya-nair/",
+      "source_domain": "forbes.com",
+      "published_date": "2025-10-05",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": true
+    },
+    "e06": {
+      "id": "e06",
+      "search_no": 2,
+      "engine": "google",
+      "title": "Meet the team - Acme AI",
+      "snippet": "Acme AI was co-founded by Priya Nair (CEO) and Daniel Osei (CTO), who previously built search infrastructure at a Fortune 500 legal publisher.",
+      "url": "https://acme.ai/about",
+      "source_domain": "acme.ai",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e07": {
+      "id": "e07",
+      "search_no": 3,
+      "engine": "google",
+      "title": "Top 5 Acme AI alternatives for legal research in 2026",
+      "snippet": "Compare Acme AI to LexBrief, CaseMind, and StatuteIQ. LexBrief offers a free tier; CaseMind targets enterprise with contact-sales pricing.",
+      "url": "https://g2.com/categories/legal-ai/acme-ai-alternatives",
+      "source_domain": "g2.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e08": {
+      "id": "e08",
+      "search_no": 3,
+      "engine": "google",
+      "title": "LexBrief - AI legal research for every lawyer",
+      "snippet": "LexBrief offers a free tier for solo practitioners and paid plans starting at $49/month.",
+      "url": "https://lexbrief.com/",
+      "source_domain": "lexbrief.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e09": {
+      "id": "e09",
+      "search_no": 3,
+      "engine": "google",
+      "title": "CaseMind: Enterprise legal intelligence platform",
+      "snippet": "CaseMind is built for enterprise law firms. Contact sales for pricing.",
+      "url": "https://casemind.io/",
+      "source_domain": "casemind.io",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e10": {
+      "id": "e10",
+      "search_no": 3,
+      "engine": "google",
+      "title": "StatuteIQ pricing and plans",
+      "snippet": "StatuteIQ starts at $79/month with a 14-day free trial, no permanent free tier.",
+      "url": "https://statuteiq.com/pricing",
+      "source_domain": "statuteiq.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e11": {
+      "id": "e11",
+      "search_no": 4,
+      "engine": "google",
+      "title": "Acme AI Pricing - Plans for every firm",
+      "snippet": "Starter: $99/month per seat. No free tier. Enterprise: contact sales for volume pricing and custom integrations.",
+      "url": "https://acme.ai/pricing",
+      "source_domain": "acme.ai",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e12": {
+      "id": "e12",
+      "search_no": 4,
+      "engine": "google",
+      "title": "Is Acme AI pricing worth it? A breakdown",
+      "snippet": "Acme AI's cheapest plan is $99/month per seat, with no free tier offered, unlike competitor LexBrief.",
+      "url": "https://legaltechreview.com/acme-ai-pricing-breakdown",
+      "source_domain": "legaltechreview.com",
+      "published_date": "2025-12-10",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e13": {
+      "id": "e13",
+      "search_no": 5,
+      "engine": "google_news",
+      "title": "Acme AI faces data privacy complaint from bar association",
+      "snippet": "A state bar association has filed a complaint alleging Acme AI's research assistant retained client documents longer than disclosed.",
+      "url": "https://legalnewsdaily.com/acme-ai-privacy-complaint",
+      "source_domain": "legalnewsdaily.com",
+      "published_date": "2025-08-14",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": true
+    },
+    "e14": {
+      "id": "e14",
+      "search_no": 5,
+      "engine": "google_news",
+      "title": "Acme AI Series A: what it means for legal tech",
+      "snippet": "Acme AI closed a $14M Series A led by Northbridge Ventures with participation from two angel investors.",
+      "url": "https://techcrunch.com/2025/11/20/acme-ai-series-a/",
+      "source_domain": "techcrunch.com",
+      "published_date": "2025-11-20",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e15": {
+      "id": "e15",
+      "search_no": 5,
+      "engine": "google_news",
+      "title": "Acme AI partners with three regional law firms",
+      "snippet": "Acme AI announced new paying customers including Bexley & Hart LLP.",
+      "url": "https://lawjournal.com/acme-ai-partnership",
+      "source_domain": "lawjournal.com",
+      "published_date": "2025-09-02",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": true
+    },
+    "e16": {
+      "id": "e16",
+      "search_no": 6,
+      "engine": "google_news",
+      "title": "Acme AI raises $14M Series A to expand legal AI assistant",
+      "snippet": "The round was led by Northbridge Ventures, with Eastgate Capital and angel investor Marcus Lee also participating.",
+      "url": "https://techcrunch.com/2025/11/20/acme-ai-series-a/",
+      "source_domain": "techcrunch.com",
+      "published_date": "2025-11-20",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e17": {
+      "id": "e17",
+      "search_no": 6,
+      "engine": "google_news",
+      "title": "Northbridge Ventures backs legal AI startup Acme AI",
+      "snippet": "Northbridge Ventures led the $14M round, its first investment in legal technology.",
+      "url": "https://venturebeat.com/acme-ai-northbridge/",
+      "source_domain": "venturebeat.com",
+      "published_date": "2025-11-21",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e18": {
+      "id": "e18",
+      "search_no": 7,
+      "engine": "google_news",
+      "title": "AI legal research tools see surge in adoption among mid-size firms",
+      "snippet": "Mid-size law firms are adopting AI legal research assistants at twice the rate of 2024, driven by billing pressure.",
+      "url": "https://legaltechreview.com/ai-legal-research-adoption-2026",
+      "source_domain": "legaltechreview.com",
+      "published_date": "2026-01-15",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e19": {
+      "id": "e19",
+      "search_no": 7,
+      "engine": "google_news",
+      "title": "Bar associations weigh new rules for AI legal research tools",
+      "snippet": "Several state bar associations are drafting guidance on disclosure requirements for AI legal research assistants.",
+      "url": "https://abajournal.com/ai-legal-research-rules",
+      "source_domain": "abajournal.com",
+      "published_date": "2025-12-02",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e20": {
+      "id": "e20",
+      "search_no": 8,
+      "engine": "google_jobs",
+      "title": "Senior Machine Learning Engineer",
+      "snippet": "Build retrieval models for legal research. Requires experience with NLP and deep learning.",
+      "url": "https://acme.ai/careers/ml-engineer",
+      "source_domain": "acme.ai",
+      "published_date": "2026-09-30",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e21": {
+      "id": "e21",
+      "search_no": 8,
+      "engine": "google_jobs",
+      "title": "Backend Engineer",
+      "snippet": "Own our ingestion pipeline and APIs. Experience with Python and distributed systems required.",
+      "url": "https://acme.ai/careers/backend-engineer",
+      "source_domain": "acme.ai",
+      "published_date": "2026-09-21",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e22": {
+      "id": "e22",
+      "search_no": 8,
+      "engine": "google_jobs",
+      "title": "Account Executive, Enterprise",
+      "snippet": "Sell Acme AI's legal research assistant to enterprise law firms.",
+      "url": "https://acme.ai/careers/account-executive",
+      "source_domain": "acme.ai",
+      "published_date": "2026-09-05",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e23": {
+      "id": "e23",
+      "search_no": 8,
+      "engine": "google_jobs",
+      "title": "Research Scientist, NLP",
+      "snippet": "Advance our legal document understanding research program.",
+      "url": "https://acme.ai/careers/research-scientist",
+      "source_domain": "acme.ai",
+      "published_date": "2026-10-02",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e24": {
+      "id": "e24",
+      "search_no": 8,
+      "engine": "google_jobs",
+      "title": "Customer Success Manager",
+      "snippet": "Help law firm customers succeed with Acme AI.",
+      "url": "https://acme.ai/careers/customer-success",
+      "source_domain": "acme.ai",
+      "published_date": "2026-09-28",
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e25": {
+      "id": "e25",
+      "search_no": 9,
+      "engine": "google_trends",
+      "title": "Google Trends: Acme AI vs AI legal research assistant",
+      "snippet": "Acme AI search interest is rising (avg 29/100). AI legal research assistant category interest is rising (avg 40/100).",
+      "url": "https://trends.google.com/trends/explore?q=Acme AI,AI legal research assistant",
+      "source_domain": "google.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e26": {
+      "id": "e26",
+      "search_no": 10,
+      "engine": "google_play",
+      "title": "Acme AI: Legal Research",
+      "snippet": "Rating: 4.3. 212 reviews. Price: Free",
+      "url": "https://play.google.com/store/apps/details?id=ai.acme.legal",
+      "source_domain": "google.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:31.293595+00:00",
+      "stale": false
+    },
+    "e27": {
+      "id": "e27",
+      "search_no": 12,
+      "engine": "google",
+      "title": "LexBrief Pricing",
+      "snippet": "Free tier for solo practitioners. Pro: $49/month. Team: contact sales.",
+      "url": "https://lexbrief.com/pricing",
+      "source_domain": "lexbrief.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:45.916045+00:00",
+      "stale": false
+    },
+    "e28": {
+      "id": "e28",
+      "search_no": 13,
+      "engine": "google",
+      "title": "CaseMind: Enterprise legal intelligence platform",
+      "snippet": "No free tier. Enterprise only \u2014 contact sales for pricing.",
+      "url": "https://casemind.io/",
+      "source_domain": "casemind.io",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:45.916045+00:00",
+      "stale": false
+    },
+    "e29": {
+      "id": "e29",
+      "search_no": 14,
+      "engine": "google",
+      "title": "StatuteIQ pricing and plans",
+      "snippet": "Starts at $79/month with a 14-day free trial. No permanent free tier.",
+      "url": "https://statuteiq.com/pricing",
+      "source_domain": "statuteiq.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:45.916045+00:00",
+      "stale": false
+    },
+    "e30": {
+      "id": "e30",
+      "search_no": 15,
+      "engine": "google_finance",
+      "title": "Thomson Reuters Corp (TRI:NYSE)",
+      "snippet": "Price: 178.42 USD. Change: 1.15 (0.65%). Market cap: 73.2B USD",
+      "url": "https://www.google.com/finance/quote/TRI:NYSE",
+      "source_domain": "google.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:45.916045+00:00",
+      "stale": false
+    },
+    "e31": {
+      "id": "e31",
+      "search_no": 16,
+      "engine": "google_finance",
+      "title": "RELX PLC (RELX:LON)",
+      "snippet": "Price: 32.1 GBP. Change: -0.08 (-0.25%). Market cap: 58.9B GBP",
+      "url": "https://www.google.com/finance/quote/RELX:LON",
+      "source_domain": "google.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:40:45.916045+00:00",
+      "stale": false
+    }
+  }
+}

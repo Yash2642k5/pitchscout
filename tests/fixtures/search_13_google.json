@@ -1,0 +1,14 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google", "q": "CaseMind pricing plans"},
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "CaseMind: Enterprise legal intelligence platform",
+      "link": "https://casemind.io/",
+      "displayed_link": "casemind.io",
+      "snippet": "No free tier. Enterprise only — contact sales for pricing.",
+      "date": null
+    }
+  ]
+}

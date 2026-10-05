@@ -1,0 +1,22 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google", "q": "\"Acme AI\" founder OR co-founder OR CEO"},
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Acme AI founder Priya Nair on building legal AI tools",
+      "link": "https://www.forbes.com/sites/acme-ai-priya-nair/",
+      "displayed_link": "forbes.com",
+      "snippet": "Priya Nair, co-founder and CEO of Acme AI, previously led machine learning at a major legal database company before starting Acme AI in 2023.",
+      "date": "Oct 5, 2025"
+    },
+    {
+      "position": 2,
+      "title": "Meet the team - Acme AI",
+      "link": "https://acme.ai/about",
+      "displayed_link": "acme.ai",
+      "snippet": "Acme AI was co-founded by Priya Nair (CEO) and Daniel Osei (CTO), who previously built search infrastructure at a Fortune 500 legal publisher.",
+      "date": null
+    }
+  ]
+}

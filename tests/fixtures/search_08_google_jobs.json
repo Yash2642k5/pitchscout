@@ -1,0 +1,46 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google_jobs", "q": "Acme AI"},
+  "jobs_results": [
+    {
+      "title": "Senior Machine Learning Engineer",
+      "company_name": "Acme AI",
+      "location": "Remote",
+      "description": "Build retrieval models for legal research. Requires experience with NLP and deep learning.",
+      "apply_options": [{"title": "Apply", "link": "https://acme.ai/careers/ml-engineer"}],
+      "detected_extensions": {"posted_at": "5 days ago"}
+    },
+    {
+      "title": "Backend Engineer",
+      "company_name": "Acme AI",
+      "location": "Bengaluru, India",
+      "description": "Own our ingestion pipeline and APIs. Experience with Python and distributed systems required.",
+      "apply_options": [{"title": "Apply", "link": "https://acme.ai/careers/backend-engineer"}],
+      "detected_extensions": {"posted_at": "2 weeks ago"}
+    },
+    {
+      "title": "Account Executive, Enterprise",
+      "company_name": "Acme AI",
+      "location": "New York, NY",
+      "description": "Sell Acme AI's legal research assistant to enterprise law firms.",
+      "apply_options": [{"title": "Apply", "link": "https://acme.ai/careers/account-executive"}],
+      "detected_extensions": {"posted_at": "1 month ago"}
+    },
+    {
+      "title": "Research Scientist, NLP",
+      "company_name": "Acme AI",
+      "location": "Remote",
+      "description": "Advance our legal document understanding research program.",
+      "apply_options": [{"title": "Apply", "link": "https://acme.ai/careers/research-scientist"}],
+      "detected_extensions": {"posted_at": "3 days ago"}
+    },
+    {
+      "title": "Customer Success Manager",
+      "company_name": "Acme AI",
+      "location": "Remote",
+      "description": "Help law firm customers succeed with Acme AI.",
+      "apply_options": [{"title": "Apply", "link": "https://acme.ai/careers/customer-success"}],
+      "detected_extensions": {"posted_at": "1 week ago"}
+    }
+  ]
+}

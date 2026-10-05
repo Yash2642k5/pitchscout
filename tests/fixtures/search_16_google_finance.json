@@ -1,0 +1,13 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google_finance", "q": "RELX:LON"},
+  "summary": {
+    "title": "RELX PLC",
+    "stock": "RELX:LON",
+    "price": 32.1,
+    "currency": "GBP",
+    "price_change": -0.08,
+    "price_change_percent": "-0.25%",
+    "market": {"market_cap": "58.9B GBP"}
+  }
+}

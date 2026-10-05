@@ -1,0 +1,22 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google", "q": "Acme AI pricing plans"},
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Acme AI Pricing - Plans for every firm",
+      "link": "https://acme.ai/pricing",
+      "displayed_link": "acme.ai",
+      "snippet": "Starter: $99/month per seat. No free tier. Enterprise: contact sales for volume pricing and custom integrations.",
+      "date": null
+    },
+    {
+      "position": 2,
+      "title": "Is Acme AI pricing worth it? A breakdown",
+      "link": "https://legaltechreview.com/acme-ai-pricing-breakdown",
+      "displayed_link": "legaltechreview.com",
+      "snippet": "Acme AI's cheapest plan is $99/month per seat, with no free tier offered, unlike competitor LexBrief.",
+      "date": "Dec 10, 2025"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google", "q": "Acme AI competitors alternatives"},
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "Top 5 Acme AI alternatives for legal research in 2026",
+      "link": "https://g2.com/categories/legal-ai/acme-ai-alternatives",
+      "displayed_link": "g2.com",
+      "snippet": "Compare Acme AI to LexBrief, CaseMind, and StatuteIQ. LexBrief offers a free tier; CaseMind targets enterprise with contact-sales pricing.",
+      "date": "Sep 2025"
+    },
+    {
+      "position": 2,
+      "title": "LexBrief - AI legal research for every lawyer",
+      "link": "https://lexbrief.com/",
+      "displayed_link": "lexbrief.com",
+      "snippet": "LexBrief offers a free tier for solo practitioners and paid plans starting at $49/month.",
+      "date": null
+    },
+    {
+      "position": 3,
+      "title": "CaseMind: Enterprise legal intelligence platform",
+      "link": "https://casemind.io/",
+      "displayed_link": "casemind.io",
+      "snippet": "CaseMind is built for enterprise law firms. Contact sales for pricing.",
+      "date": null
+    },
+    {
+      "position": 4,
+      "title": "StatuteIQ pricing and plans",
+      "link": "https://statuteiq.com/pricing",
+      "displayed_link": "statuteiq.com",
+      "snippet": "StatuteIQ starts at $79/month with a 14-day free trial, no permanent free tier.",
+      "date": null
+    }
+  ]
+}

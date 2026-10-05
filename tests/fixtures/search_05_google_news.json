@@ -1,0 +1,27 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google_news", "q": "\"Acme AI\""},
+  "news_results": [
+    {
+      "title": "Acme AI faces data privacy complaint from bar association",
+      "link": "https://legalnewsdaily.com/acme-ai-privacy-complaint",
+      "source": {"name": "Legal News Daily"},
+      "snippet": "A state bar association has filed a complaint alleging Acme AI's research assistant retained client documents longer than disclosed.",
+      "date": "08/14/2025"
+    },
+    {
+      "title": "Acme AI Series A: what it means for legal tech",
+      "link": "https://techcrunch.com/2025/11/20/acme-ai-series-a/",
+      "source": {"name": "TechCrunch"},
+      "snippet": "Acme AI closed a $14M Series A led by Northbridge Ventures with participation from two angel investors.",
+      "date": "11/20/2025"
+    },
+    {
+      "title": "Acme AI partners with three regional law firms",
+      "link": "https://lawjournal.com/acme-ai-partnership",
+      "source": {"name": "Law Journal"},
+      "snippet": "Acme AI announced new paying customers including Bexley & Hart LLP.",
+      "date": "09/02/2025"
+    }
+  ]
+}

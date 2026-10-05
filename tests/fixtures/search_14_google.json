@@ -1,0 +1,14 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google", "q": "StatuteIQ pricing plans"},
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "StatuteIQ pricing and plans",
+      "link": "https://statuteiq.com/pricing",
+      "displayed_link": "statuteiq.com",
+      "snippet": "Starts at $79/month with a 14-day free trial. No permanent free tier.",
+      "date": null
+    }
+  ]
+}

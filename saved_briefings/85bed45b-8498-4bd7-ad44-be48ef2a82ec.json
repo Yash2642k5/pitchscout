@@ -1,0 +1,850 @@
+{
+  "id": "85bed45b-8498-4bd7-ad44-be48ef2a82ec",
+  "company": "Fernbank",
+  "website": "https://fernbank.io",
+  "category": "B2B expense management SaaS",
+  "generated_at": "2026-10-05T16:43:39.803648+00:00",
+  "searches": [
+    {
+      "number": 1,
+      "engine": "google",
+      "query": "\"Fernbank\" B2B expense management SaaS",
+      "status": "live",
+      "result_count": 2
+    },
+    {
+      "number": 2,
+      "engine": "google",
+      "query": "\"Fernbank\" founder OR co-founder OR CEO",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 3,
+      "engine": "google",
+      "query": "Fernbank competitors alternatives",
+      "status": "live",
+      "result_count": 4
+    },
+    {
+      "number": 4,
+      "engine": "google",
+      "query": "Fernbank pricing plans",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 5,
+      "engine": "google_news",
+      "query": "\"Fernbank\"",
+      "status": "live",
+      "result_count": 2
+    },
+    {
+      "number": 6,
+      "engine": "google_news",
+      "query": "\"Fernbank\" funding OR raises OR investors",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 7,
+      "engine": "google_news",
+      "query": "B2B expense management SaaS",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 8,
+      "engine": "google_jobs",
+      "query": "Fernbank",
+      "status": "live",
+      "result_count": 2
+    },
+    {
+      "number": 9,
+      "engine": "google_trends",
+      "query": "Fernbank,B2B expense management SaaS",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 10,
+      "engine": "google_play",
+      "query": "Fernbank",
+      "status": "empty",
+      "result_count": 0
+    },
+    {
+      "number": 11,
+      "engine": "google_shopping",
+      "query": "Fernbank",
+      "status": "empty",
+      "result_count": 0
+    },
+    {
+      "number": 12,
+      "engine": "google",
+      "query": "Ledgerly pricing plans",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 13,
+      "engine": "google",
+      "query": "SpendRight pricing plans",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 14,
+      "engine": "google",
+      "query": "QuickTab pricing plans",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 15,
+      "engine": "google_finance",
+      "query": "",
+      "status": "live",
+      "result_count": 1
+    },
+    {
+      "number": 16,
+      "engine": "google_finance",
+      "query": "",
+      "status": "live",
+      "result_count": 1
+    }
+  ],
+  "company_summary": [
+    {
+      "text": "Fernbank provides enterprise-grade B2B expense management for finance teams.",
+      "confidence": "Single source",
+      "evidence": [
+        "e01"
+      ]
+    },
+    {
+      "text": "Founder Marcus Ibe previously ran finance ops at a Series D fintech before starting Fernbank in 2024.",
+      "confidence": "Single source",
+      "evidence": [
+        "e03"
+      ]
+    },
+    {
+      "text": "Fernbank raised a $9M seed round led by Cascade Partners.",
+      "confidence": "Single source",
+      "evidence": [
+        "e02",
+        "e09"
+      ]
+    },
+    {
+      "text": "2 open role(s) found. Role mix \u2014 Engineering: 1, ML and research: 0 (0%), Sales and marketing: 1, Other: 0.",
+      "confidence": "Single source",
+      "evidence": [
+        "e13",
+        "e14"
+      ]
+    }
+  ],
+  "market": {
+    "verdict": "Expanding",
+    "verdict_text": "Rising corporate spend drives market expansion despite mixed interest trends.",
+    "verdict_evidence": [
+      "e12"
+    ],
+    "points": [
+      {
+        "text": "B2B expense management market is growing as travel spend rebounds.",
+        "confidence": "Single source",
+        "evidence": [
+          "e12"
+        ]
+      },
+      {
+        "text": "Fernbank search interest rising while category interest declines.",
+        "confidence": "Single source",
+        "evidence": [
+          "e15"
+        ]
+      },
+      {
+        "text": "Multiple rivals (Ledgerly, SpendRight, QuickTab) crowd the space.",
+        "confidence": "Single source",
+        "evidence": [
+          "e04"
+        ]
+      }
+    ]
+  },
+  "competitors": [
+    {
+      "text": "Ledgerly offers expense management with a free tier for teams under 5.",
+      "confidence": "Corroborated",
+      "evidence": [
+        "e04",
+        "e05"
+      ]
+    },
+    {
+      "text": "SpendRight provides expense tools at $15/user/month, no free tier.",
+      "confidence": "Corroborated",
+      "evidence": [
+        "e04",
+        "e06"
+      ]
+    },
+    {
+      "text": "QuickTab delivers expense management starting at $10/user/month, no free tier.",
+      "confidence": "Corroborated",
+      "evidence": [
+        "e04",
+        "e07"
+      ]
+    },
+    {
+      "text": "Bill.com is a public fintech offering integrated payment solutions.",
+      "confidence": "Single source",
+      "evidence": [
+        "e19"
+      ]
+    },
+    {
+      "text": "Workday provides enterprise HR and finance cloud applications.",
+      "confidence": "Single source",
+      "evidence": [
+        "e20"
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "category": "competitive",
+      "text": "Multiple competitors offer similar expense management solutions.",
+      "evidence": [
+        "e04",
+        "e05",
+        "e06",
+        "e07"
+      ]
+    }
+  ],
+  "commercial": {
+    "pricing_comparison": [
+      {
+        "name": "Fernbank",
+        "lowest_paid_plan": "Not found",
+        "free_tier": "No",
+        "contact_sales_tier": "Yes",
+        "evidence": [
+          "e08"
+        ]
+      },
+      {
+        "name": "Ledgerly",
+        "lowest_paid_plan": "$12/user/month",
+        "free_tier": "Yes",
+        "contact_sales_tier": "No",
+        "evidence": [
+          "e05"
+        ]
+      },
+      {
+        "name": "SpendRight",
+        "lowest_paid_plan": "$15/user/month",
+        "free_tier": "No",
+        "contact_sales_tier": "No",
+        "evidence": [
+          "e06"
+        ]
+      },
+      {
+        "name": "QuickTab",
+        "lowest_paid_plan": "$10/user/month",
+        "free_tier": "No",
+        "contact_sales_tier": "No",
+        "evidence": [
+          "e07"
+        ]
+      }
+    ],
+    "listed_comparables": [
+      {
+        "name": "Bill.com Holdings Inc",
+        "ticker": "BILL",
+        "price": "61.4 USD",
+        "market_cap": "6.1B USD",
+        "price_movement": "-0.6 (-0.97%)",
+        "evidence": [
+          "e19"
+        ]
+      },
+      {
+        "name": "Workday Inc",
+        "ticker": "WDAY",
+        "price": "265.9 USD",
+        "market_cap": "70.4B USD",
+        "price_movement": "3.4 (1.29%)",
+        "evidence": [
+          "e20"
+        ]
+      }
+    ],
+    "mismatches": [
+      {
+        "rule": "free_tier_gap",
+        "claim": "Fernbank offers no free tier while Ledgerly offers a free tier.",
+        "pricing_note": "Company lists no public plan; competitor Ledgerly offers free tier.",
+        "why_it_matters": "Free tier can attract SMBs and increase adoption.",
+        "question": "Will Fernbank consider adding a free tier?",
+        "evidence": [
+          "e08",
+          "e05"
+        ]
+      },
+      {
+        "rule": "hidden_pricing",
+        "claim": "Fernbank does not publish public pricing.",
+        "pricing_note": "Company requires sales contact; no pricing visible.",
+        "why_it_matters": "Pricing transparency affects buyer decision speed.",
+        "question": "When will Fernbank publish transparent pricing?",
+        "evidence": [
+          "e08"
+        ]
+      }
+    ]
+  },
+  "scorecard": [
+    {
+      "dimension": "Team",
+      "score": 3,
+      "rationale": "Founder experienced; hiring underway, limited evidence on depth.",
+      "evidence": [
+        "e03",
+        "e13",
+        "e14"
+      ]
+    },
+    {
+      "dimension": "Traction",
+      "score": 3,
+      "rationale": "Seed funding, three paying customers, market growth signals early traction.",
+      "evidence": [
+        "e10",
+        "e02",
+        "e12"
+      ]
+    },
+    {
+      "dimension": "Market",
+      "score": 4,
+      "rationale": "Market expanding as corporate spend recovers.",
+      "evidence": [
+        "e12",
+        "e15"
+      ]
+    },
+    {
+      "dimension": "Defensibility",
+      "score": 2,
+      "rationale": "Enterprise positioning but many similar rivals, limited moat.",
+      "evidence": [
+        "e01",
+        "e04"
+      ]
+    },
+    {
+      "dimension": "Risk",
+      "score": 3,
+      "rationale": "Hidden pricing and competitive density raise moderate risk.",
+      "evidence": [
+        "e08",
+        "e04"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "no": 1,
+      "item": "Founder names",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e03"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 2,
+      "item": "Founder prior experience",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e03"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 3,
+      "item": "Funding round and amount",
+      "priority": 1,
+      "status": "Found",
+      "evidence": [
+        "e02",
+        "e09"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 4,
+      "item": "Named investors",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e02",
+        "e11"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 5,
+      "item": "Named paying customers",
+      "priority": 1,
+      "status": "Found",
+      "evidence": [
+        "e10"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 6,
+      "item": "Product description from a non-company domain",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e04"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 7,
+      "item": "ML or research roles among open jobs",
+      "priority": 1,
+      "status": "Missing",
+      "evidence": [],
+      "question": "Do you plan to hire ML or research roles?",
+      "why": "ML expertise could enhance expense automation."
+    },
+    {
+      "no": 8,
+      "item": "At least one open role",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e13"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 9,
+      "item": "Public pricing for the company",
+      "priority": 1,
+      "status": "Missing",
+      "evidence": [],
+      "question": "Will you publish public pricing tiers?",
+      "why": "Transparent pricing aids buyer evaluation."
+    },
+    {
+      "no": 10,
+      "item": "Pricing for all three competitors",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e05",
+        "e06",
+        "e07"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 11,
+      "item": "Data returned for both listed companies",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e19",
+        "e20"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 12,
+      "item": "Category interest trend",
+      "priority": 3,
+      "status": "Found",
+      "evidence": [
+        "e15",
+        "e12"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 13,
+      "item": "Press coverage in the last 12 months",
+      "priority": 2,
+      "status": "Found",
+      "evidence": [
+        "e09",
+        "e10",
+        "e11",
+        "e12"
+      ],
+      "question": "",
+      "why": ""
+    },
+    {
+      "no": 14,
+      "item": "App or shopping listing",
+      "priority": 3,
+      "status": "Missing",
+      "evidence": [],
+      "question": "Is Fernbank listed in any app or marketplace?",
+      "why": "Listings improve discoverability."
+    }
+  ],
+  "questions": [
+    {
+      "text": "Will Fernbank consider adding a free tier?",
+      "why": "Free tier can attract SMBs and increase adoption.",
+      "priority": null,
+      "source": "mismatch"
+    },
+    {
+      "text": "When will Fernbank publish transparent pricing?",
+      "why": "Pricing transparency affects buyer decision speed.",
+      "priority": null,
+      "source": "mismatch"
+    },
+    {
+      "text": "Do you plan to hire ML or research roles?",
+      "why": "ML expertise could enhance expense automation.",
+      "priority": 1,
+      "source": "gap"
+    },
+    {
+      "text": "Will you publish public pricing tiers?",
+      "why": "Transparent pricing aids buyer evaluation.",
+      "priority": 1,
+      "source": "gap"
+    },
+    {
+      "text": "Is Fernbank listed in any app or marketplace?",
+      "why": "Listings improve discoverability.",
+      "priority": 3,
+      "source": "gap"
+    },
+    {
+      "text": "Why does Fernbank hide public pricing?",
+      "why": "Opaque pricing can delay buyer decisions.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "Will Fernbank add a free tier to attract SMBs?",
+      "why": "Free tier drives early adoption.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "How will Fernbank differentiate from Ledgerly, SpendRight, QuickTab?",
+      "why": "Competitive landscape is crowded.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "What is the plan for scaling beyond seed funding?",
+      "why": "Limited capital may restrict growth.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "Are there regulatory compliance measures for expense data?",
+      "why": "Finance data handling is regulated.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "How does Fernbank ensure data security for enterprise clients?",
+      "why": "Security breaches damage reputation.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "What is the timeline for publishing transparent pricing?",
+      "why": "Pricing clarity improves market traction.",
+      "priority": null,
+      "source": "risk"
+    },
+    {
+      "text": "Does Fernbank have a roadmap for integration with ERP systems?",
+      "why": "Integrations increase product stickiness.",
+      "priority": null,
+      "source": "risk"
+    }
+  ],
+  "evidence": {
+    "e01": {
+      "id": "e01",
+      "search_no": 1,
+      "engine": "google",
+      "title": "Fernbank - Expense Management for Growing Teams",
+      "snippet": "Fernbank is an enterprise-grade B2B expense management platform for finance teams.",
+      "url": "https://fernbank.io/",
+      "source_domain": "fernbank.io",
+      "published_date": "2026-03-01",
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e02": {
+      "id": "e02",
+      "search_no": 1,
+      "engine": "google",
+      "title": "Fernbank raises $9M seed round for expense automation",
+      "snippet": "Fernbank, a B2B expense management SaaS startup, raised a $9M seed round led by Cascade Partners.",
+      "url": "https://finledger.com/fernbank-seed",
+      "source_domain": "finledger.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e03": {
+      "id": "e03",
+      "search_no": 2,
+      "engine": "google",
+      "title": "Fernbank founder Marcus Ibe on fixing expense reports",
+      "snippet": "Marcus Ibe, founder and CEO of Fernbank, previously ran finance operations at a Series D fintech before founding Fernbank in 2024.",
+      "url": "https://finledger.com/fernbank-marcus-ibe",
+      "source_domain": "finledger.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e04": {
+      "id": "e04",
+      "search_no": 3,
+      "engine": "google",
+      "title": "Fernbank vs. the field: expense management alternatives",
+      "snippet": "Compare Fernbank to Ledgerly, SpendRight, and QuickTab. Ledgerly offers a free tier for teams under 5 people.",
+      "url": "https://g2.com/categories/expense-management/fernbank-alternatives",
+      "source_domain": "g2.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e05": {
+      "id": "e05",
+      "search_no": 3,
+      "engine": "google",
+      "title": "Ledgerly pricing",
+      "snippet": "Free for teams under 5. Growth: $12/user/month.",
+      "url": "https://ledgerly.com/pricing",
+      "source_domain": "ledgerly.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e06": {
+      "id": "e06",
+      "search_no": 3,
+      "engine": "google",
+      "title": "SpendRight for finance teams",
+      "snippet": "No free tier. Plans start at $15/user/month.",
+      "url": "https://spendright.com/",
+      "source_domain": "spendright.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e07": {
+      "id": "e07",
+      "search_no": 3,
+      "engine": "google",
+      "title": "QuickTab pricing",
+      "snippet": "Starts at $10/user/month, no free tier, 30-day trial.",
+      "url": "https://quicktab.app/pricing",
+      "source_domain": "quicktab.app",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e08": {
+      "id": "e08",
+      "search_no": 4,
+      "engine": "google",
+      "title": "Fernbank Pricing",
+      "snippet": "Contact sales for pricing. No self-serve plans published.",
+      "url": "https://fernbank.io/pricing",
+      "source_domain": "fernbank.io",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e09": {
+      "id": "e09",
+      "search_no": 5,
+      "engine": "google_news",
+      "title": "Fernbank raises $9M seed round",
+      "snippet": "Cascade Partners led the round.",
+      "url": "https://finledger.com/fernbank-seed",
+      "source_domain": "finledger.com",
+      "published_date": "2025-10-12",
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e10": {
+      "id": "e10",
+      "search_no": 5,
+      "engine": "google_news",
+      "title": "Fernbank signs three mid-market customers",
+      "snippet": "Fernbank announced new paying customers including Hollis Manufacturing.",
+      "url": "https://finledger.com/fernbank-customers",
+      "source_domain": "finledger.com",
+      "published_date": "2026-01-22",
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e11": {
+      "id": "e11",
+      "search_no": 6,
+      "engine": "google_news",
+      "title": "Fernbank raises $9M seed for expense automation",
+      "snippet": "Cascade Partners led the round with participation from angel investor Rita Solano.",
+      "url": "https://finledger.com/fernbank-seed",
+      "source_domain": "finledger.com",
+      "published_date": "2025-10-12",
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e12": {
+      "id": "e12",
+      "search_no": 7,
+      "engine": "google_news",
+      "title": "B2B expense management software market grows amid return-to-office spend",
+      "snippet": "Demand for B2B expense management software is rising as travel and entertainment spend rebounds.",
+      "url": "https://finledger.com/expense-management-market-2026",
+      "source_domain": "finledger.com",
+      "published_date": "2026-02-01",
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e13": {
+      "id": "e13",
+      "search_no": 8,
+      "engine": "google_jobs",
+      "title": "Full Stack Developer",
+      "snippet": "Build Fernbank's expense approval workflows.",
+      "url": "https://fernbank.io/careers/fullstack",
+      "source_domain": "fernbank.io",
+      "published_date": "2026-09-29",
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e14": {
+      "id": "e14",
+      "search_no": 8,
+      "engine": "google_jobs",
+      "title": "Growth Marketing Manager",
+      "snippet": "Own demand generation for Fernbank.",
+      "url": "https://fernbank.io/careers/growth",
+      "source_domain": "fernbank.io",
+      "published_date": "2026-09-21",
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e15": {
+      "id": "e15",
+      "search_no": 9,
+      "engine": "google_trends",
+      "title": "Google Trends: Fernbank vs B2B expense management SaaS",
+      "snippet": "Fernbank search interest is rising (avg 9/100). B2B expense management SaaS category interest is declining (avg 18/100).",
+      "url": "https://trends.google.com/trends/explore?q=Fernbank,B2B expense management SaaS",
+      "source_domain": "google.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:25.059573+00:00",
+      "stale": false
+    },
+    "e16": {
+      "id": "e16",
+      "search_no": 12,
+      "engine": "google",
+      "title": "Ledgerly pricing",
+      "snippet": "Free for teams under 5. Growth: $12/user/month.",
+      "url": "https://ledgerly.com/pricing",
+      "source_domain": "ledgerly.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:27.717855+00:00",
+      "stale": false
+    },
+    "e17": {
+      "id": "e17",
+      "search_no": 13,
+      "engine": "google",
+      "title": "SpendRight for finance teams",
+      "snippet": "No free tier. Plans start at $15/user/month.",
+      "url": "https://spendright.com/",
+      "source_domain": "spendright.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:27.717855+00:00",
+      "stale": false
+    },
+    "e18": {
+      "id": "e18",
+      "search_no": 14,
+      "engine": "google",
+      "title": "QuickTab pricing",
+      "snippet": "Starts at $10/user/month, no free tier.",
+      "url": "https://quicktab.app/pricing",
+      "source_domain": "quicktab.app",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:27.717855+00:00",
+      "stale": false
+    },
+    "e19": {
+      "id": "e19",
+      "search_no": 15,
+      "engine": "google_finance",
+      "title": "Bill.com Holdings Inc (BILL:NYSE)",
+      "snippet": "Price: 61.4 USD. Change: -0.6 (-0.97%). Market cap: 6.1B USD",
+      "url": "https://www.google.com/finance/quote/BILL:NYSE",
+      "source_domain": "google.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:27.717855+00:00",
+      "stale": false
+    },
+    "e20": {
+      "id": "e20",
+      "search_no": 16,
+      "engine": "google_finance",
+      "title": "Workday Inc (WDAY:NASDAQ)",
+      "snippet": "Price: 265.9 USD. Change: 3.4 (1.29%). Market cap: 70.4B USD",
+      "url": "https://www.google.com/finance/quote/WDAY:NASDAQ",
+      "source_domain": "google.com",
+      "published_date": null,
+      "retrieved_at": "2026-10-05T16:43:27.717855+00:00",
+      "stale": false
+    }
+  }
+}

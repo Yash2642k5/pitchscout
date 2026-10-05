@@ -1,0 +1,14 @@
+{
+  "search_metadata": {"status": "Success"},
+  "search_parameters": {"engine": "google", "q": "LexBrief pricing plans"},
+  "organic_results": [
+    {
+      "position": 1,
+      "title": "LexBrief Pricing",
+      "link": "https://lexbrief.com/pricing",
+      "displayed_link": "lexbrief.com",
+      "snippet": "Free tier for solo practitioners. Pro: $49/month. Team: contact sales.",
+      "date": null
+    }
+  ]
+}
