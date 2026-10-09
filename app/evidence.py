@@ -54,6 +54,15 @@ _ABSOLUTE_FORMATS = (
 )
 
 
+def _try_absolute(date_str: str) -> str | None:
+    for fmt in _ABSOLUTE_FORMATS:
+        try:
+            return datetime.strptime(date_str, fmt).date().isoformat()
+        except ValueError:
+            continue
+    return None
+
+
 def parse_date(date_str: str | None, retrieved_at: datetime) -> str | None:
     """Parses a relative ("3 days ago") or absolute date string to an ISO date.
 
@@ -77,11 +86,20 @@ def parse_date(date_str: str | None, retrieved_at: datetime) -> str | None:
     except ValueError:
         pass
 
-    for fmt in _ABSOLUTE_FORMATS:
-        try:
-            return datetime.strptime(date_str, fmt).date().isoformat()
-        except ValueError:
-            continue
+    parsed = _try_absolute(date_str)
+    if parsed:
+        return parsed
+
+    # google_news stamps a time and zone onto the date ("10/01/2026, 08:35 PM, +0000
+    # UTC"), which matches none of the date-only formats above. Retry on growing
+    # comma-separated prefixes so those items carry a date, and therefore a staleness
+    # flag, at all. Growing prefixes rather than the first chunk alone, because
+    # "Jul 21, 2026, 07:00 AM" carries a comma inside the date itself.
+    chunks = [c.strip() for c in date_str.split(",")]
+    for end in range(1, len(chunks)):
+        parsed = _try_absolute(", ".join(chunks[:end]))
+        if parsed:
+            return parsed
     return None
 
 

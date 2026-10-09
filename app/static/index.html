@@ -6,447 +6,746 @@
 <title>PitchScout</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
 <style>
+  /* ============================================================
+     Palette — five solid colours, no glass, no gradients, no blur.
+     221D23 Shadow Grey · 4F3824 Deep Walnut · D1603D Fiery Terracotta
+     DDB967 Metallic Gold · D0E37F Lime Cream
+     The three greys below 221D23 are steps of that same hue, so the
+     surfaces stack without introducing a sixth colour.
+     ============================================================ */
   :root {
-    --ink: #11151C;
-    --panel: #171C26;
-    --panel-2: #1E2531;
-    --panel-3: #242C3A;
-    --border: #2A3140;
-    --border-soft: #232A38;
-    --text: #E7E9ED;
-    --muted: #8891A0;
-    --faint: #5B6475;
-    --gold: #D4A72C;
-    --gold-soft: rgba(212, 167, 44, 0.14);
-    --green: #4F9D69;
-    --green-soft: rgba(79, 157, 105, 0.14);
-    --amber: #C98A3C;
-    --amber-soft: rgba(201, 138, 60, 0.14);
-    --red: #C1554A;
-    --red-soft: rgba(193, 85, 74, 0.14);
-    --blue: #6E97C9;
-    --blue-soft: rgba(110, 151, 201, 0.14);
+    --void:    #151216;
+    --surface: #221D23;
+    --raised:  #2C262D;
+    --sunk:    #372F36;
+    --line:    #3A3139;
+    --line-2:  #4A4048;
+
+    --walnut:  #4F3824;
+    --terra:   #D1603D;
+    --gold:    #DDB967;
+    --lime:    #D0E37F;
+
+    --paper:   #F4EFE6;
+    --paper-2: #B9ADA1;
+    --paper-3: #8B8077;
+
+    /* Chart marks. Lime and gold sit too close for a colourblind reader to
+       separate, so a two-series chart is always lime + terracotta and gold is
+       only used where it is not adjacent to lime. */
+    --c1: #D0E37F;
+    --c2: #D1603D;
+    --c3: #DDB967;
+    --c4: #8A7D6E;
+
+    --r:     16px;
+    --r-sm:  10px;
+    --r-xs:  6px;
   }
+
   * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
   body {
     margin: 0;
-    font-family: 'IBM Plex Sans', -apple-system, Segoe UI, sans-serif;
-    background: var(--ink);
-    color: var(--text);
-    font-size: 15px;
+    font-family: Archivo, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--void);
+    color: var(--paper);
+    font-size: 14px;
     line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, .serif { font-family: 'Source Serif 4', Georgia, serif; }
-  a { color: var(--blue); text-decoration: none; }
+
+  a { color: var(--gold); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  button { font-family: inherit; }
+  button { font-family: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
 
-  /* ---------- Header ---------- */
-  header {
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--sunk); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--line-2); }
+
+  .display {
+    font-stretch: 78%;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: -0.005em;
+    line-height: 0.94;
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 60;
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    padding: 20px 32px 16px;
-    border-bottom: 1px solid var(--border-soft);
+    gap: 18px;
+    padding: 11px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
   }
-  header .brand { font-family: 'Source Serif 4', serif; font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
-  .header-stats { display: flex; align-items: baseline; gap: 22px; font-size: 13px; color: var(--faint); }
-  .header-stats b { color: var(--muted); font-weight: 600; }
-  .replay-pill {
-    padding: 3px 10px;
-    border-radius: 3px;
-    font-size: 12px;
-    border: 1px solid var(--amber);
-    color: var(--amber);
-  }
-  .replay-pill.off { border-color: var(--border); color: var(--faint); }
+  .bar-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .brand { font-size: 16px; letter-spacing: 0.01em; display: flex; align-items: center; gap: 9px; }
+  .brand i { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); }
 
-  /* ---------- Layout ---------- */
-  .layout { display: flex; }
-  nav.sidebar {
-    width: 220px;
-    flex-shrink: 0;
-    padding: 24px 16px;
-    border-right: 1px solid var(--border-soft);
-    min-height: calc(100vh - 69px);
-  }
-  nav.sidebar h2 { font-size: 12px; color: var(--faint); font-weight: 500; margin: 0 0 12px; font-family: 'IBM Plex Sans', sans-serif; }
-  .briefing-item {
-    display: block;
-    width: 100%;
-    text-align: left;
-    background: none;
-    border: none;
-    border-left: 2px solid transparent;
-    padding: 7px 0 7px 10px;
-    margin-bottom: 2px;
-    color: var(--text);
-    cursor: pointer;
-    font-size: 13.5px;
-  }
-  .briefing-item:hover { border-left-color: var(--border); background: var(--panel); }
-  .briefing-item.active { border-left-color: var(--gold); background: var(--panel); }
-  .briefing-item .company { font-weight: 500; }
-  .briefing-item .date { display: block; color: var(--faint); font-size: 11px; margin-top: 2px; }
-
-  main { flex: 1; padding: 28px 40px 80px; max-width: 920px; }
-
-  /* ---------- Form ---------- */
-  .intake { margin-bottom: 36px; }
-  .intake h1 { font-size: 26px; margin: 0 0 4px; font-weight: 600; }
-  .intake .sub { color: var(--muted); font-size: 14px; margin: 0 0 20px; max-width: 60ch; }
-  form.briefing-form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
-  form.briefing-form .field { display: flex; flex-direction: column; gap: 5px; flex: 1 1 170px; }
-  form.briefing-form label { font-size: 12.5px; color: var(--muted); }
-  form.briefing-form input {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px 11px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-  }
-  form.briefing-form input:focus { outline: none; border-color: var(--gold); }
-  form.briefing-form select {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 10px 11px;
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238891A0' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 11px center;
-    padding-right: 30px;
-  }
-  form.briefing-form select:focus { outline: none; border-color: var(--gold); }
-  button.generate {
-    background: var(--gold);
-    color: #1A1304;
-    border: none;
-    border-radius: 4px;
-    padding: 11px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-  }
-  button.generate:disabled { opacity: .5; cursor: default; }
-
-  /* ---------- Progress bar ---------- */
-  .progress-wrap { margin-top: 16px; display: none; }
-  .progress-wrap.active { display: block; }
-  .progress-label { font-size: 13px; color: var(--muted); margin-bottom: 7px; display: flex; justify-content: space-between; }
-  .progress-label .pct { color: var(--gold); font-weight: 600; font-variant-numeric: tabular-nums; }
-  .progress-track { height: 4px; background: var(--border-soft); border-radius: 2px; overflow: hidden; }
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    background: var(--gold);
-    border-radius: 2px;
-    transition: width .4s ease;
-  }
-  .error-banner {
-    background: var(--red-soft);
-    border: 1px solid var(--red);
-    color: #F0B4AD;
-    border-radius: 4px;
-    padding: 11px 14px;
-    margin-top: 14px;
-    font-size: 13.5px;
-  }
-
-  /* ---------- Results scaffold ---------- */
-  .result-header { margin-bottom: 28px; }
-  .result-header h1 { font-size: 24px; margin: 0 0 3px; }
-  .result-header .meta { color: var(--faint); font-size: 13px; }
-  .result-header .meta a { color: var(--faint); }
-
-  .bento { display: grid; gap: 14px; margin-bottom: 14px; }
-
-  /* ---------- Scorecard bento ---------- */
-  .scorecard-row { grid-template-columns: repeat(5, 1fr); }
-  @media (max-width: 760px) { .scorecard-row { grid-template-columns: repeat(2, 1fr); } }
-  .score-tile {
-    background: var(--panel);
-    border: 1px solid var(--border-soft);
-    border-radius: 6px;
-    padding: 18px 16px;
-    cursor: pointer;
-    transition: border-color .15s ease, background .15s ease;
-  }
-  .score-tile:hover { border-color: var(--border); background: var(--panel-2); }
-  .score-tile.expanded { background: var(--panel-2); border-color: var(--gold); grid-column: span 2; }
-  @media (max-width: 760px) { .score-tile.expanded { grid-column: span 2; } }
-  .score-tile .dim { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
-  .score-tile .score-row { display: flex; align-items: baseline; gap: 3px; }
-  .score-tile .val { font-family: 'Source Serif 4', serif; font-size: 36px; font-weight: 600; color: var(--gold); line-height: 1; }
-  .score-tile .of5 { font-size: 13px; color: var(--faint); }
-  .score-tile .rationale {
-    font-size: 12.5px;
-    color: var(--muted);
-    margin-top: 10px;
-    display: none;
-    line-height: 1.5;
-  }
-  .score-tile.expanded .rationale { display: block; }
-
-  /* ---------- Section cards ---------- */
-  .card {
-    background: var(--panel);
-    border: 1px solid var(--border-soft);
-    border-radius: 6px;
-    padding: 22px 24px;
-    margin-bottom: 14px;
-  }
-  .card h2 { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
-  .card .hint { font-size: 12.5px; color: var(--faint); margin: -8px 0 14px; }
-
-  .two-col { grid-template-columns: 1.3fr 1fr; }
-  @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
-
-  .summary-text { font-size: 14.5px; line-height: 1.65; }
-  .summary-text span.stmt { display: block; margin-bottom: 8px; }
-  .summary-text span.stmt:last-child { margin-bottom: 0; }
-
-  .verdict-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-  .verdict-tag {
-    font-size: 12.5px;
-    font-weight: 600;
-    padding: 4px 11px;
-    border-radius: 3px;
-    border: 1px solid;
-  }
-  .verdict-Expanding { color: var(--green); border-color: var(--green); background: var(--green-soft); }
-  .verdict-Saturated { color: var(--red); border-color: var(--red); background: var(--red-soft); }
-  .verdict-Mixed { color: var(--amber); border-color: var(--amber); background: var(--amber-soft); }
-  .verdict-Nascent { color: var(--blue); border-color: var(--blue); background: var(--blue-soft); }
-  .verdict-text { font-size: 14px; color: var(--text); }
-  ul.points { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.6; }
-  ul.points li { margin-bottom: 6px; }
-
-  .statement { padding: 7px 0; border-bottom: 1px solid var(--border-soft); font-size: 14px; }
-  .statement:last-child { border-bottom: none; }
-
-  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  th, td { text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--border-soft); vertical-align: top; }
-  th { color: var(--faint); font-weight: 500; font-size: 12px; }
-  td:first-child, th:first-child { padding-left: 0; }
-
-  .mismatch-card { background: var(--panel-2); border-left: 2px solid var(--amber); border-radius: 0 4px 4px 0; padding: 12px 14px; margin-top: 10px; }
-  .mismatch-card .claim { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
-  .mismatch-card .pricing-note, .mismatch-card .why { font-size: 13px; color: var(--muted); margin-top: 3px; }
-  .mismatch-card .question { color: var(--gold); font-size: 13.5px; margin-top: 8px; }
-  .empty-state { color: var(--faint); font-size: 13.5px; font-style: italic; }
-
-  .gap-list { display: flex; flex-direction: column; }
-  .gap-row { display: flex; align-items: baseline; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border-soft); font-size: 13.5px; }
-  .gap-row:last-child { border-bottom: none; }
-  .gap-row .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  .dot-Found { background: var(--green); }
-  .dot-Partial { background: var(--amber); }
-  .dot-Missing { background: var(--red); }
-  .gap-row .item { flex: 1; }
-  .gap-row .priority { color: var(--faint); font-size: 11.5px; }
-
-  .risk-row { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border-soft); font-size: 14px; align-items: flex-start; }
-  .risk-row:last-child { border-bottom: none; }
-  .risk-cat {
-    flex-shrink: 0;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 3px;
-    margin-top: 1px;
-    white-space: nowrap;
-  }
-  .cat-legal, .cat-regulatory { color: var(--red); background: var(--red-soft); }
-  .cat-founder_history, .cat-reputational { color: var(--amber); background: var(--amber-soft); }
-  .cat-competitive { color: var(--blue); background: var(--blue-soft); }
-  .cat-other { color: var(--muted); background: var(--panel-2); }
-
-  ol.questions { list-style: none; margin: 0; padding: 0; counter-reset: q; }
-  ol.questions li {
-    counter-increment: q;
-    padding: 11px 0 11px 30px;
-    position: relative;
-    border-bottom: 1px solid var(--border-soft);
-    font-size: 14.5px;
-  }
-  ol.questions li:last-child { border-bottom: none; }
-  ol.questions li::before {
-    content: counter(q);
-    position: absolute;
-    left: 0;
-    top: 11px;
-    font-family: 'Source Serif 4', serif;
-    font-weight: 600;
-    color: var(--gold);
-    font-size: 14px;
-  }
-  ol.questions .why { display: block; color: var(--muted); font-size: 12.5px; margin-top: 3px; }
-  button.show-more {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    border-radius: 4px;
-    padding: 8px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    margin-top: 14px;
-  }
-  button.show-more:hover { border-color: var(--gold); color: var(--gold); }
-
-  /* ---------- Evidence chips ---------- */
-  .ev-chip {
+  .histbtn {
     display: inline-flex;
     align-items: center;
-    gap: 3px;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--blue);
-    background: var(--blue-soft);
-    border-radius: 3px;
-    padding: 1px 6px;
-    margin-left: 5px;
-    text-decoration: none !important;
-    vertical-align: 1px;
+    gap: 9px;
+    padding: 7px 12px;
+    border-radius: var(--r-xs);
+    border: 1px solid var(--line-2);
+    background: var(--raised);
+    color: var(--paper-2);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
   }
-  .ev-chip:hover { background: rgba(110, 151, 201, 0.26); }
-  .ev-chip .stale-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); }
+  .histbtn:hover { background: var(--sunk); color: var(--paper); }
+  .histbtn[aria-expanded="true"] { background: var(--gold); border-color: var(--gold); color: var(--surface); }
+  .histbtn .n { font-size: 11px; font-weight: 700; padding: 0 6px; border-radius: var(--r-xs); background: var(--sunk); color: var(--paper); }
+  .histbtn[aria-expanded="true"] .n { background: rgba(34, 29, 35, 0.22); color: var(--surface); }
+  .histbtn .bars { display: flex; align-items: flex-end; gap: 2px; height: 11px; }
+  .histbtn .bars i { width: 3px; background: currentColor; display: block; }
+  .histbtn .bars i:nth-child(1) { height: 5px; }
+  .histbtn .bars i:nth-child(2) { height: 11px; }
+  .histbtn .bars i:nth-child(3) { height: 8px; }
 
-  .placeholder { color: var(--faint); font-size: 14px; text-align: center; padding: 60px 0; }
+  .bar-stats { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: var(--r-xs);
+    background: var(--raised);
+    font-size: 12px;
+    color: var(--paper-3);
+  }
+  .stat b { color: var(--paper); font-weight: 600; }
+  .stat.live { background: var(--gold); color: var(--walnut); }
+  .stat.live b { color: var(--surface); }
+  @media (max-width: 780px) { .histbtn .lbl { display: none; } .stat { display: none; } .stat.live { display: inline-flex; } }
+
+  /* ---------- History drawer ---------- */
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: rgba(10, 8, 11, 0.72);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.24s ease;
+  }
+  .scrim.on { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 80;
+    width: 290px;
+    max-width: 86vw;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px 14px;
+    background: var(--surface);
+    border-right: 1px solid var(--line);
+    transform: translateX(-102%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0.24, 1);
+  }
+  .drawer.on { transform: none; }
+  .drawer-head { display: flex; align-items: center; gap: 10px; margin: 0 4px 14px; }
+  .drawer-head h2 { font-size: 11.5px; font-weight: 700; margin: 0; flex: 1; text-transform: uppercase; letter-spacing: 0.08em; color: var(--paper-3); }
+  .drawer-x {
+    width: 26px; height: 26px;
+    border-radius: var(--r-xs);
+    border: none;
+    background: var(--raised);
+    color: var(--paper-2);
+    cursor: pointer;
+    display: grid; place-items: center;
+    font-size: 16px; line-height: 1;
+  }
+  .drawer-x:hover { background: var(--sunk); color: var(--paper); }
+  .rail-list { display: flex; flex-direction: column; gap: 3px; overflow-y: auto; flex: 1; }
+  .rail-item {
+    display: block; width: 100%; text-align: left;
+    background: none; border: none;
+    border-left: 2px solid transparent;
+    border-radius: 0 var(--r-xs) var(--r-xs) 0;
+    padding: 9px 11px; cursor: pointer; font-size: 13px;
+  }
+  .rail-item:hover { background: var(--raised); }
+  .rail-item[aria-current="true"] { background: var(--raised); border-left-color: var(--gold); }
+  .rail-item .co { display: block; font-weight: 600; }
+  .rail-item .on { display: block; color: var(--paper-3); font-size: 11.5px; margin-top: 1px; }
+  .drawer-foot { font-size: 11.5px; color: var(--paper-3); margin: 12px 4px 0; line-height: 1.45; }
+
+  /* ---------- Shell ---------- */
+  .shell { max-width: 1480px; margin: 0 auto; padding: 18px 24px 80px; }
+  @media (max-width: 860px) { .shell { padding: 14px 14px 60px; } }
+
+  /* ---------- Intake ---------- */
+  .intake { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px 22px; margin-bottom: 16px; }
+  .intake h1 { font-size: 22px; margin: 0 0 4px; }
+  .intake p { margin: 0 0 16px; color: var(--paper-2); font-size: 13px; }
+  .form { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 10px; align-items: end; }
+  @media (max-width: 1080px) { .form { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .field label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--paper-3); }
+  .field input, .field select {
+    width: 100%;
+    background: var(--raised);
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-sm);
+    padding: 10px 12px;
+    color: var(--paper);
+    font-size: 13.5px;
+    font-family: inherit;
+  }
+  .field input::placeholder { color: var(--paper-3); }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--gold); background: var(--sunk); }
+  .field select {
+    cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23B9ADA1' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+  .go {
+    border: none;
+    border-radius: var(--r-sm);
+    padding: 11px 22px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--surface);
+    background: var(--gold);
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .go:hover:not(:disabled) { background: var(--lime); }
+  .go:disabled { opacity: 0.5; cursor: default; }
+  @media (max-width: 1080px) { .go { grid-column: 1 / -1; } }
+
+  .prog { margin-top: 16px; display: none; }
+  .prog.on { display: block; }
+  .prog-top { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--paper-2); margin-bottom: 7px; }
+  .prog-top b { color: var(--gold); font-weight: 700; }
+  .prog-track { height: 4px; background: var(--sunk); border-radius: 999px; overflow: hidden; }
+  .prog-fill { height: 100%; width: 0; background: var(--gold); transition: width 0.4s ease; }
+
+  .alert {
+    margin-top: 14px;
+    padding: 11px 14px;
+    border-radius: var(--r-sm);
+    border-left: 3px solid var(--terra);
+    background: var(--raised);
+    color: var(--paper);
+    font-size: 13px;
+  }
+
+  /* ============================================================
+     Bento grid
+     Panels stretch to their row so a short tile never leaves a hole
+     beside a tall one, and a column that would be half empty holds a
+     .stack of two tiles instead.
+     ============================================================ */
+  .sheet { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; }
+  .c4 { grid-column: span 4; }
+  .c5 { grid-column: span 5; }
+  .c7 { grid-column: span 7; }
+  .c8 { grid-column: span 8; }
+  .c12 { grid-column: span 12; }
+  .stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .stack > .panel { flex: 1 1 auto; }
+  @media (max-width: 1280px) {
+    .c4, .c5, .c7, .c8 { grid-column: span 6; }
+  }
+  /* A lone tile left on the last row of a wrapped pair takes the full width
+     rather than sitting in half of it with a gap alongside. */
+  @media (max-width: 1280px) and (min-width: 861px) {
+    .sheet > .c4:nth-last-child(1) { grid-column: span 12; }
+  }
+  @media (max-width: 860px) {
+    .sheet > * { grid-column: span 12 !important; }
+  }
+
+  .panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+
+  /* The label is a solid block welded into the tile's top-left corner, the way
+     the reference bento tags its cards. It is the only chrome a panel gets. */
+  .phead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding-right: 16px; margin-bottom: 14px; }
+  .ttl {
+    background: var(--walnut);
+    color: var(--paper);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 9px 14px 8px;
+    border-radius: 0 0 var(--r-sm) 0;
+    white-space: nowrap;
+  }
+  .ttl-lime  { background: var(--lime);  color: var(--surface); }
+  .ttl-terra { background: var(--terra); color: #2A1109; }
+  .ttl-gold  { background: var(--gold);  color: var(--surface); }
+  .phead .n {
+    font-size: 11px; font-weight: 700;
+    color: var(--paper-3);
+    padding: 2px 7px;
+    border-radius: var(--r-xs);
+    background: var(--raised);
+  }
+  .phead .spacer { flex: 1; min-width: 8px; }
+  .pbody { padding: 0 20px 18px; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .pbody.flush { padding-right: 0; }
+  .empty { color: var(--paper-3); font-size: 13px; }
+
+  /* ---------- Hero ---------- */
+  .hero { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 26px 24px 22px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .hero-main { flex: 1 1 420px; min-width: 0; }
+  .hero h1 { font-size: clamp(38px, 5.4vw, 68px); margin: 0; }
+  .hero .liner {
+    font-family: Newsreader, Georgia, serif;
+    font-size: 17.5px; line-height: 1.45;
+    color: var(--paper-2);
+    margin: 12px 0 0; max-width: 60ch;
+  }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; }
+  .tag { font-size: 11.5px; padding: 5px 10px; border-radius: var(--r-xs); background: var(--raised); color: var(--paper-2); }
+  .tag a { color: var(--gold); }
+  .hero-side { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+  .verdict {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 9px 16px;
+    border-radius: var(--r-xs);
+    font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .verdict i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+  .v-Expanding { background: var(--lime);  color: var(--surface); }
+  .v-Saturated { background: var(--terra); color: #2A1109; }
+  .v-Mixed     { background: var(--gold);  color: var(--surface); }
+  .v-Nascent   { background: var(--walnut); color: var(--paper); }
+  .hero-stats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .hero-stat { padding: 10px 14px; border-radius: var(--r-sm); background: var(--raised); text-align: right; min-width: 92px; }
+  .hero-stat .v { font-size: 24px; font-weight: 800; display: block; line-height: 1.1; }
+  .hero-stat .k { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-3); }
+
+  /* ---------- Prose ---------- */
+  .prose { font-family: Newsreader, Georgia, serif; font-size: 16.5px; line-height: 1.68; color: #E6DFD4; margin: 0; max-width: 76ch; }
+
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 8px; margin-top: 18px; }
+  .fact { padding: 11px 13px; border-radius: var(--r-sm); background: var(--raised); }
+  .fact .k { font-size: 10.5px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-3); display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 3px; }
+  .fact .v { font-size: 13px; font-weight: 600; }
+
+  /* ---------- Scorecard ---------- */
+  .meters { display: flex; flex-direction: column; gap: 4px; }
+  .meter {
+    display: block; width: 100%; text-align: left;
+    border: none; border-radius: var(--r-sm);
+    background: none; padding: 9px 11px; cursor: pointer;
+    transition: background 0.14s;
+  }
+  .meter:hover { background: var(--raised); }
+  .meter[aria-expanded="true"] { background: var(--raised); }
+  .meter-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .meter-dim { font-size: 13px; font-weight: 600; }
+  .meter-val { font-size: 16px; font-weight: 800; }
+  .meter-val span { font-size: 11px; font-weight: 600; color: var(--paper-3); }
+  .meter-track { display: flex; gap: 3px; margin-top: 8px; }
+  .meter-track i { height: 5px; flex: 1; border-radius: 2px; background: var(--sunk); }
+  .meter-track i.f { background: currentColor; }
+  .s-low  { color: var(--terra); }
+  .s-mid  { color: var(--gold); }
+  .s-high { color: var(--lime); }
+  .meter-why { display: none; font-size: 12.5px; color: var(--paper-2); margin-top: 9px; line-height: 1.5; }
+  .meter[aria-expanded="true"] .meter-why { display: block; }
+
+  /* ---------- Lists ---------- */
+  .rows { display: flex; flex-direction: column; }
+  .row-i { padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; line-height: 1.52; }
+  .row-i:first-child { padding-top: 0; }
+  .row-i:last-child { border-bottom: none; }
+
+  ul.points { margin: 0; padding: 0; list-style: none; }
+  ul.points li { position: relative; padding: 9px 0 9px 15px; border-bottom: 1px solid var(--line); font-size: 13.5px; line-height: 1.52; }
+  ul.points li:last-child { border-bottom: none; }
+  ul.points li::before { content: ""; position: absolute; left: 0; top: 16px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+  ul.points li:first-child { padding-top: 0; }
+  ul.points li:first-child::before { top: 7px; }
+
+  .verdict-line { font-size: 13.5px; line-height: 1.55; margin-bottom: 12px; color: #E6DFD4; }
+
+  /* ---------- News ---------- */
+  /* Capped so a seven-item feed does not set the height of its whole bento row. */
+  .news { display: flex; flex-direction: column; gap: 7px; max-height: 330px; overflow-y: auto; padding-right: 4px; }
+  .news-i { padding: 11px 12px; border-radius: var(--r-sm); background: var(--raised); }
+  .news-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px; }
+  .news-date { font-size: 11px; font-weight: 700; color: var(--gold); white-space: nowrap; }
+  .news-src { font-size: 11px; color: var(--paper-3); }
+  .news-i .t { font-size: 13px; font-weight: 600; line-height: 1.4; display: block; color: var(--paper); }
+  .news-i .t:hover { color: var(--gold); text-decoration: none; }
+  .news-i .so { font-size: 12.5px; color: var(--paper-2); margin-top: 5px; line-height: 1.5; }
+
+  /* ---------- Tables ---------- */
+  .tbl-wrap { overflow-x: auto; }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th, .tbl td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .tbl th { color: var(--paper-3); font-weight: 700; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .tbl tbody tr:last-child td { border-bottom: none; }
+  .tbl td:first-child, .tbl th:first-child { padding-left: 0; }
+  .tbl td:last-child, .tbl th:last-child { padding-right: 0; }
+  .tbl .subj { font-weight: 700; }
+  .nf { color: var(--paper-3); }
+  .src-pill { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: var(--r-xs); white-space: nowrap; background: var(--raised); color: var(--paper-2); }
+  .src-Vendor { background: var(--lime); color: var(--surface); }
+  .src-Third { background: var(--walnut); color: var(--paper); }
+
+  /* ---------- Mismatches ---------- */
+  .mm { padding: 14px 15px; border-radius: var(--r-sm); background: var(--raised); border-left: 3px solid var(--terra); margin-bottom: 8px; }
+  .mm:last-child { margin-bottom: 0; }
+  .mm .rule { font-size: 10.5px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--terra); margin-bottom: 5px; }
+  .mm .claim { font-weight: 700; font-size: 13.5px; }
+  .mm .note, .mm .why { font-size: 12.5px; color: var(--paper-2); margin-top: 4px; line-height: 1.5; }
+  .mm .q { font-size: 13px; color: var(--gold); margin-top: 10px; line-height: 1.45; }
+
+  /* ============================================================
+     Source dot — one solid dot per claim, no icon. Gold is a live
+     source; terracotta means at least one is over a year old.
+     The 18px box is the hit target; the 9px dot is what you see.
+     ============================================================ */
+  .srcdot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    margin: 0 0 0 4px;
+    vertical-align: -4px;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 50%;
+  }
+  .srcdot::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--gold);
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+  }
+  .srcdot.stale::before { background: var(--terra); }
+  .srcdot:hover::before, .srcdot.on::before { transform: scale(1.25); box-shadow: 0 0 0 4px rgba(221, 185, 103, 0.22); }
+  .srcdot.stale:hover::before, .srcdot.stale.on::before { box-shadow: 0 0 0 4px rgba(209, 96, 61, 0.24); }
+
+  .srcpop {
+    position: fixed; top: 0; left: 0; z-index: 200;
+    width: 300px; max-width: calc(100vw - 20px);
+    padding: 8px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--line-2);
+    background: var(--raised);
+    box-shadow: 0 24px 48px -16px rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    transition: opacity 0.14s ease, transform 0.18s ease;
+  }
+  .srcpop.on { opacity: 1; transform: none; pointer-events: auto; }
+  .srcpop-h { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-3); padding: 2px 7px 7px; }
+  .srcpop-l { display: flex; flex-direction: column; gap: 2px; max-height: 50vh; overflow-y: auto; }
+  .srcpop-i { display: block; padding: 7px 8px; border-radius: var(--r-xs); text-decoration: none !important; }
+  .srcpop-i:hover { background: var(--sunk); }
+  .srcpop-i .host { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--gold); }
+  .srcpop-i .host em { width: 6px; height: 6px; border-radius: 50%; background: var(--terra); flex: 0 0 auto; }
+  .srcpop-i .t { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px; line-height: 1.4; color: var(--paper); margin-top: 2px; }
+  .srcpop-i .m { display: block; font-size: 11px; color: var(--paper-3); margin-top: 3px; }
+
+  /* ============================================================
+     Decks — a free-scrolling band, not a pager. Cards keep their own
+     width, the one at the edge is meant to be half cut off, and the
+     arrows glide by roughly a screenful.
+     ============================================================ */
+  .deck-nav { display: inline-flex; align-items: center; gap: 5px; }
+  .deck-arrow {
+    width: 28px; height: 28px;
+    display: grid; place-items: center;
+    border-radius: var(--r-xs);
+    border: none;
+    background: var(--raised);
+    color: var(--paper-2);
+    cursor: pointer;
+    transition: background 0.14s, color 0.14s, opacity 0.14s;
+  }
+  .deck-arrow svg { width: 14px; height: 14px; }
+  .deck-arrow:hover:not(:disabled) { background: var(--gold); color: var(--surface); }
+  .deck-arrow:disabled { opacity: 0.28; cursor: default; }
+
+  .deck {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    padding: 2px 20px 2px 0;
+  }
+  .deck::-webkit-scrollbar { display: none; }
+  .deck > * { flex: 0 0 min(var(--card, 300px), 84%); }
+  /* A deck short enough to fit lets its cards share the width instead of
+     parking them at the left with a void beside them. */
+  .deck.fit > * { flex: 1 1 0; }
+  .deck.solo { display: block; padding-right: 20px; }
+
+  /* A deck takes the height its tile was given, and the cards stretch with
+     it, so a short card never leaves the tile half empty. */
+  .pbody.flush .deck { flex: 1 1 auto; align-items: stretch; }
+  .deck-rail { height: 3px; border-radius: 999px; background: var(--sunk); margin: 12px 20px 0 0; overflow: hidden; }
+  .deck-rail i { display: block; height: 100%; border-radius: 999px; background: var(--gold); }
+
+  /* ---------- Diligence cards ---------- */
+  .dil-i { padding: 15px 16px; border-radius: var(--r-sm); background: var(--raised); display: flex; flex-direction: column; min-width: 0; }
+  .dil-top { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+  .st { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 3px 8px; border-radius: var(--r-xs); }
+  .st-Found   { background: var(--lime);  color: var(--surface); }
+  .st-Partial { background: var(--gold);  color: var(--surface); }
+  .st-Missing { background: var(--terra); color: #2A1109; }
+  .pri { font-size: 10.5px; font-weight: 700; padding: 3px 7px; border-radius: var(--r-xs); background: var(--sunk); color: var(--paper-3); }
+  .pri-1 { background: var(--walnut); color: var(--paper); }
+  .dil-area { font-size: 11px; color: var(--paper-3); margin-left: auto; text-align: right; }
+  .dil-topic { font-size: 15px; font-weight: 700; margin-bottom: 7px; line-height: 1.3; }
+  .dil-found { font-size: 13px; color: var(--paper-2); line-height: 1.55; margin-bottom: 13px; }
+  .dil-q { font-size: 13.5px; line-height: 1.5; padding-top: 12px; border-top: 1px solid var(--line-2); margin-top: auto; }
+  .dil-q .qm { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 5px; }
+  .dil-why { font-size: 12px; color: var(--paper-3); margin-top: 7px; line-height: 1.45; }
+
+  .seg { display: flex; gap: 2px; padding: 2px; border-radius: var(--r-xs); background: var(--raised); }
+  .seg button {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: none; border-radius: 4px;
+    padding: 5px 10px; font-size: 11.5px; font-weight: 600;
+    color: var(--paper-2); cursor: pointer; transition: background 0.14s, color 0.14s;
+  }
+  .seg button:hover { color: var(--paper); }
+  .seg button i { font-style: normal; font-size: 10.5px; font-weight: 700; color: var(--paper-3); }
+  .seg button[aria-pressed="true"] { background: var(--sunk); color: var(--paper); }
+  .seg button[data-f="Found"][aria-pressed="true"]   { background: var(--lime);  color: var(--surface); }
+  .seg button[data-f="Partial"][aria-pressed="true"] { background: var(--gold);  color: var(--surface); }
+  .seg button[data-f="Missing"][aria-pressed="true"] { background: var(--terra); color: #2A1109; }
+  .seg button[aria-pressed="true"] i { color: inherit; }
+
+  /* ---------- Risk cards ---------- */
+  .risk-i { padding: 16px 17px; border-radius: var(--r-sm); background: var(--raised); border-left: 3px solid var(--terra); display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .risk-i .cat { align-self: flex-start; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: var(--r-xs); white-space: nowrap; }
+  .risk-i .txt { font-size: 14px; line-height: 1.55; color: var(--paper); }
+  .cat-legal, .cat-regulatory { background: var(--terra); color: #2A1109; }
+  .cat-founder_history, .cat-reputational { background: var(--gold); color: var(--surface); }
+  .cat-competitive { background: var(--walnut); color: var(--paper); }
+  .cat-other { background: var(--sunk); color: var(--paper-2); }
+
+  /* ---------- Hiring mix ---------- */
+  .mix { display: flex; flex-direction: column; gap: 11px; }
+  /* 2px of surface between segments, so touching colours never blend. */
+  .mix-bar { display: flex; gap: 2px; height: 8px; }
+  .mix-bar i { display: block; border-radius: 2px; min-width: 3px; }
+  .mix-1 { background: var(--c1); }
+  .mix-2 { background: var(--c2); }
+  .mix-3 { background: var(--c3); }
+  .mix-4 { background: var(--c4); }
+  .mix-key { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
+  .mix-key div { display: flex; align-items: center; gap: 9px; }
+  .mix-key em { width: 9px; height: 9px; border-radius: 2px; flex: 0 0 auto; }
+  .mix-key span { flex: 1; color: var(--paper-2); font-style: normal; }
+  .mix-key b { font-weight: 700; }
+  .mix-foot { display: flex; align-items: center; font-size: 11.5px; color: var(--paper-3); margin-top: 2px; }
+
+  .market-wrap { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 28px; }
+  @media (max-width: 1080px) { .market-wrap { grid-template-columns: minmax(0, 1fr); gap: 20px; } }
+
+  /* ---------- Trajectory ---------- */
+  .traj-head { font-size: 26px; margin: 0 0 12px; max-width: 24ch; }
+  .traj-wrap { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 26px; }
+  @media (max-width: 1080px) { .traj-wrap { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+  .sig { padding: 11px 13px; border-radius: var(--r-sm); background: var(--raised); font-size: 13px; line-height: 1.5; margin-bottom: 7px; }
+  .sig:last-child { margin-bottom: 0; }
+  .sig .conf { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-3); display: block; margin-top: 5px; }
+
+  /* ============================================================
+     Charts
+     ============================================================ */
+  .chart { position: relative; width: 100%; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .grid { stroke: var(--line); stroke-width: 1; }
+  .chart .axis-t { fill: var(--paper-3); font-size: 15px; font-family: Archivo, sans-serif; font-weight: 600; }
+  .chart .end-t { font-size: 16px; font-weight: 700; font-family: Archivo, sans-serif; }
+  .chart .cross { stroke: var(--line-2); stroke-width: 1; opacity: 0; }
+  .chart .cdot { opacity: 0; stroke: var(--surface); stroke-width: 2.5; }
+  .chart.hot .cross, .chart.hot .cdot { opacity: 1; }
+
+  .chart-tip {
+    position: absolute;
+    top: 0;
+    z-index: 5;
+    min-width: 136px;
+    padding: 8px 10px;
+    border-radius: var(--r-sm);
+    background: var(--sunk);
+    border: 1px solid var(--line-2);
+    box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+  .chart.hot .chart-tip { opacity: 1; }
+  .chart-tip .when { font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--paper-3); margin-bottom: 5px; }
+  .chart-tip .r { display: flex; align-items: center; gap: 7px; font-size: 12px; margin-top: 3px; }
+  .chart-tip .r em { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 auto; }
+  .chart-tip .r span { flex: 1; color: var(--paper-2); }
+  .chart-tip .r b { font-weight: 700; color: var(--paper); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 12px; }
+  .legend div { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--paper-2); }
+  .legend em { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
+  .legend b { color: var(--paper); font-weight: 700; }
+
+  .quote { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+  .quote .sym { font-size: 13px; font-weight: 700; }
+  .quote .ex { font-size: 11px; color: var(--paper-3); }
+  .quote .px { font-size: 20px; font-weight: 800; margin-left: auto; }
+  .quote .ch { font-size: 12px; font-weight: 700; padding: 2px 7px; border-radius: var(--r-xs); }
+  .ch-up   { background: var(--lime);  color: var(--surface); }
+  .ch-down { background: var(--terra); color: #2A1109; }
+  .ch-flat { background: var(--sunk);  color: var(--paper-2); }
+  .quote-foot { font-size: 11px; color: var(--paper-3); margin-top: 8px; }
+
+  .read { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+  .read-i { flex: 1 1 128px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--raised); }
+  .read-i .k { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-3); display: flex; align-items: center; gap: 6px; }
+  .read-i .k em { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 auto; }
+  .read-i .v { font-size: 17px; font-weight: 800; margin-top: 3px; }
+  .read-i .v small { font-size: 11px; font-weight: 600; color: var(--paper-3); }
+
+  .ghost { text-align: center; padding: 90px 20px; color: var(--paper-2); font-size: 14px; }
+  .ghost b { display: block; font-size: 20px; margin-bottom: 8px; color: var(--paper); }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .sheet.enter > * { animation: rise 0.4s cubic-bezier(0.22, 0.8, 0.3, 1) backwards; animation-delay: calc(var(--i, 0) * 38ms); }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet.enter > * { animation: none; }
+    .prog-fill, .srcpop, .srcdot::before, .chart-tip { transition: none; }
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">PitchScout</div>
-  <div class="header-stats">
-    <span>Searches used <b id="stat-used">—</b></span>
-    <span>Budget left <b id="stat-remaining">—</b></span>
-    <span id="replay-indicator" class="replay-pill off">Replay off</span>
+<header class="topbar">
+  <div class="bar-left">
+    <button class="histbtn" id="hist-btn" type="button" aria-expanded="false" aria-controls="drawer">
+      <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="lbl">History</span><span class="n" id="hist-n">0</span>
+    </button>
+    <div class="brand display"><i></i>PitchScout</div>
+  </div>
+  <div class="bar-stats">
+    <span class="stat">Searches run <b id="stat-used">—</b></span>
+    <span class="stat">Budget left <b id="stat-left">—</b></span>
+    <span class="stat" id="stat-mode">Live searches</span>
   </div>
 </header>
 
-<div class="layout">
-  <nav class="sidebar">
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="Saved briefings">
+  <div class="drawer-head">
     <h2>Saved briefings</h2>
-    <div id="briefing-list"></div>
-  </nav>
+    <button class="drawer-x" id="drawer-x" type="button" aria-label="Close history">&times;</button>
+  </div>
+  <div class="rail-list" id="rail-list"></div>
+  <div class="drawer-foot">Cached briefings replay without spending searches.</div>
+</aside>
 
+<div class="shell">
   <main>
-    <div class="intake">
-      <h1>New briefing</h1>
-      <p class="sub">Enter a company, its website, and its category. PitchScout runs 16 searches and builds a source-linked briefing.</p>
-      <form class="briefing-form" id="briefing-form">
+    <section class="intake">
+      <h1 class="display">New briefing</h1>
+      <p>Sixteen searches across web, news, jobs, trends and finance, read into one source-linked briefing.</p>
+      <form class="form" id="form">
         <div class="field">
           <label for="company">Company</label>
-          <input id="company" name="company" placeholder="ExampleAI" required />
+          <input id="company" name="company" placeholder="Atlan" required />
         </div>
         <div class="field">
           <label for="website">Website</label>
-          <input id="website" name="website" placeholder="https://example.ai" required />
+          <input id="website" name="website" placeholder="https://atlan.com" required />
         </div>
         <div class="field">
           <label for="category">Category</label>
-          <input id="category" name="category" placeholder="AI legal assistant" required />
+          <input id="category" name="category" placeholder="enterprise data catalog" required />
         </div>
         <div class="field">
           <label for="region">Search region</label>
           <select id="region" name="region">
-            <option value="us">🇺🇸 United States</option>
-            <option value="in">🇮🇳 India</option>
-            <option value="gb">🇬🇧 United Kingdom</option>
-            <option value="sg">🇸🇬 Singapore</option>
-            <option value="au">🇦🇺 Australia</option>
-            <option value="de">🇩🇪 Germany</option>
-            <option value="jp">🇯🇵 Japan</option>
+            <option value="us">United States</option>
+            <option value="in">India</option>
+            <option value="gb">United Kingdom</option>
+            <option value="sg">Singapore</option>
+            <option value="au">Australia</option>
+            <option value="de">Germany</option>
+            <option value="jp">Japan</option>
           </select>
         </div>
-        <button class="generate" id="generate-btn" type="submit">Generate</button>
+        <button class="go" id="go" type="submit">Generate briefing</button>
       </form>
-      <div class="progress-wrap" id="progress-wrap">
-        <div class="progress-label">
-          <span id="progress-text">Starting…</span>
-          <span class="pct" id="progress-pct">0%</span>
-        </div>
-        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+      <div class="prog" id="prog">
+        <div class="prog-top"><span id="prog-text">Starting</span><b id="prog-pct">0%</b></div>
+        <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
       </div>
-      <div id="error-banner" class="error-banner" style="display:none;"></div>
+      <div id="alert" class="alert" style="display:none;"></div>
+    </section>
+
+    <div class="sheet" id="sheet" style="display:none;"></div>
+
+    <div class="ghost" id="ghost">
+      <b class="display">No briefing open</b>
+      Enter a company above to build one, or open the history for a saved briefing.
     </div>
-
-    <div id="results" style="display:none;">
-      <div class="result-header">
-        <h1 id="briefing-title" class="serif"></h1>
-        <div class="meta" id="briefing-meta"></div>
-      </div>
-
-      <div class="bento scorecard-row" id="scorecard-grid"></div>
-
-      <div class="card">
-        <h2>Company</h2>
-        <div class="summary-text" id="company-summary"></div>
-      </div>
-
-      <div class="card">
-        <h2>Market</h2>
-        <div class="verdict-row">
-          <span class="verdict-tag" id="verdict-tag"></span>
-          <span class="verdict-text" id="verdict-text"></span>
-        </div>
-        <ul class="points" id="market-points"></ul>
-      </div>
-
-      <div class="bento two-col">
-        <div class="card" style="margin-bottom:0;">
-          <h2>Competitors</h2>
-          <div id="section-competitors"></div>
-        </div>
-        <div class="card" style="margin-bottom:0;">
-          <h2>Pricing comparison</h2>
-          <table>
-            <thead><tr><th>Company</th><th>Lowest plan</th><th>Free tier</th><th>Enterprise</th></tr></thead>
-            <tbody id="pricing-body"></tbody>
-          </table>
-          <div id="comparables-wrap"></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Pricing mismatches</h2>
-        <div id="mismatches"></div>
-      </div>
-
-      <div class="card">
-        <h2>Risks</h2>
-        <div id="risk-list"></div>
-      </div>
-
-      <div class="card">
-        <h2>Questions to ask</h2>
-        <ol class="questions" id="questions-list"></ol>
-        <button class="show-more" id="questions-more" type="button">Show more</button>
-      </div>
-
-      <div class="card">
-        <h2>What's missing</h2>
-        <div class="gap-list" id="gap-list"></div>
-      </div>
-    </div>
-
-    <div id="placeholder" class="placeholder">Generate a briefing, or select a saved one from the sidebar.</div>
   </main>
 </div>
 
 <script>
-const $ = (sel) => document.querySelector(sel);
-let currentQuestions = [];
+const $ = (s) => document.querySelector(s);
+const REDUCED = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* Chart marks. Lime and gold are indistinguishable to a deuteranope, so they
+   are never adjacent: a two-series chart is lime + terracotta, and gold only
+   appears in the four-slot mix where terracotta sits between them. */
+const C = { s1: "#D0E37F", s2: "#D1603D", s3: "#DDB967", s4: "#8A7D6E" };
+
+let EV = {};
+let diligenceRows = [];
+let diligenceFilter = "all";
 
 function esc(s) {
   const d = document.createElement("div");
@@ -455,201 +754,865 @@ function esc(s) {
 }
 
 function fmtDate(iso) {
-  if (!iso) return "unknown date";
-  try { return new Date(iso).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
-  catch (e) { return iso; }
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
+  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function fmtShort(iso) {
+  if (!iso) return "undated";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function hostOf(url) {
   try { return new URL(url).hostname.replace(/^www\./, ""); } catch (e) { return ""; }
 }
 
-function evidenceChips(ids, evidenceMap) {
+/* ============================================================
+   Source dot — a solid dot, nothing else. Gold is live, terracotta
+   flags at least one source over a year old. The list is on click.
+   ============================================================ */
+function srcDot(ids) {
   if (!ids || !ids.length) return "";
-  return ids.map((id) => {
-    const ev = evidenceMap[id];
-    if (!ev) return "";
-    const stale = ev.stale ? '<span class="stale-dot" title="Over a year old"></span>' : "";
-    const title = `${ev.title} — ${hostOf(ev.url)}, ${fmtDate(ev.retrieved_at)}`;
-    return ` <a class="ev-chip" href="${esc(ev.url)}" target="_blank" rel="noopener" title="${esc(title)}">${stale}${esc(hostOf(ev.url) || id)}</a>`;
-  }).join("");
+  const seen = [];
+  ids.forEach((id) => { if (EV[id] && seen.indexOf(id) === -1) seen.push(id); });
+  if (!seen.length) return "";
+  const stale = seen.some((id) => EV[id].stale);
+  const label = `${seen.length} source${seen.length > 1 ? "s" : ""}`;
+  return `<button class="srcdot${stale ? " stale" : ""}" type="button" aria-haspopup="true" aria-expanded="false" aria-label="${label}" title="${label}" data-ev="${seen.join(",")}"></button>`;
 }
 
-function renderStatementsInline(list, evidenceMap) {
-  if (!list || !list.length) return '<div class="empty-state">Not found in available evidence.</div>';
-  return list.map((s) => `<span class="stmt">${esc(s.text)}${evidenceChips(s.evidence, evidenceMap)}</span>`).join("");
+const POP = document.createElement("div");
+POP.className = "srcpop";
+document.body.appendChild(POP);
+let popDot = null;
+let popPinned = false;
+let popTimer = null;
+
+function popFill(ids) {
+  const items = ids.map((id) => {
+    const ev = EV[id];
+    if (!ev) return "";
+    const host = hostOf(ev.url) || id;
+    const meta = [ev.published_date ? fmtDate(ev.published_date) : "", ev.stale ? "over a year old" : ""].filter(Boolean).join(" · ");
+    return `<a class="srcpop-i" href="${esc(ev.url)}" target="_blank" rel="noopener">
+      <span class="host">${esc(host)}${ev.stale ? '<em title="Over a year old"></em>' : ""}</span>
+      ${ev.title ? `<span class="t">${esc(ev.title)}</span>` : ""}
+      ${meta ? `<span class="m">${esc(meta)}</span>` : ""}
+    </a>`;
+  }).join("");
+  POP.innerHTML = `<div class="srcpop-h">${ids.length} source${ids.length > 1 ? "s" : ""}</div><div class="srcpop-l">${items}</div>`;
 }
+
+function popPlace() {
+  if (!popDot) return;
+  const r = popDot.getBoundingClientRect();
+  if (r.bottom < 4 || r.top > window.innerHeight - 4) { popClose(); return; }
+  const w = POP.offsetWidth;
+  const h = POP.offsetHeight;
+  let left = r.left + r.width / 2 - w / 2;
+  left = Math.max(10, Math.min(left, window.innerWidth - w - 10));
+  let top = r.bottom + 8;
+  if (top + h > window.innerHeight - 10) top = Math.max(10, r.top - h - 8);
+  POP.style.left = `${Math.round(left)}px`;
+  POP.style.top = `${Math.round(top)}px`;
+}
+
+function popOpen(dot, pinned) {
+  clearTimeout(popTimer);
+  if (popDot && popDot !== dot) {
+    popDot.classList.remove("on");
+    popDot.setAttribute("aria-expanded", "false");
+  }
+  popDot = dot;
+  popPinned = !!pinned;
+  dot.classList.add("on");
+  dot.setAttribute("aria-expanded", "true");
+  popFill((dot.dataset.ev || "").split(",").filter(Boolean));
+  POP.classList.add("on");
+  popPlace();
+}
+
+function popClose() {
+  clearTimeout(popTimer);
+  POP.classList.remove("on");
+  if (popDot) {
+    popDot.classList.remove("on");
+    popDot.setAttribute("aria-expanded", "false");
+  }
+  popDot = null;
+  popPinned = false;
+}
+
+document.addEventListener("pointerover", (e) => {
+  const t = e.target.closest ? e.target.closest(".srcdot") : null;
+  if (t) { clearTimeout(popTimer); if (t !== popDot) popOpen(t, false); return; }
+  if (e.target.closest && e.target.closest(".srcpop")) clearTimeout(popTimer);
+});
+
+document.addEventListener("pointerout", (e) => {
+  if (popPinned || !popDot) return;
+  const from = e.target.closest ? (e.target.closest(".srcdot") || e.target.closest(".srcpop")) : null;
+  if (!from) return;
+  const to = e.relatedTarget;
+  if (to && to.closest && (to.closest(".srcdot") || to.closest(".srcpop"))) return;
+  clearTimeout(popTimer);
+  popTimer = setTimeout(popClose, 220);
+});
+
+document.addEventListener("click", (e) => {
+  const dot = e.target.closest ? e.target.closest(".srcdot") : null;
+  if (dot) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (popDot === dot && popPinned) popClose();
+    else popOpen(dot, true);
+    return;
+  }
+  if (!(e.target.closest && e.target.closest(".srcpop"))) popClose();
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { popClose(); closeDrawer(); }
+});
+
+window.addEventListener("scroll", () => { if (popDot) popPlace(); }, true);
+window.addEventListener("resize", () => { if (popDot) popPlace(); });
+
+function scoreClass(n) { return n <= 2 ? "s-low" : n === 3 ? "s-mid" : "s-high"; }
+
+/* Briefings saved before the overview/diligence sections existed still need to
+   open from the list, so their old shape is mapped forward on read. */
+function migrate(b) {
+  if (!b.overview && Array.isArray(b.company_summary)) {
+    b.overview = {
+      one_liner: "",
+      paragraph: b.company_summary.map((s) => s.text).join(" "),
+      evidence: b.company_summary.flatMap((s) => s.evidence || []),
+    };
+  }
+  if (!b.diligence && Array.isArray(b.gaps)) {
+    b.diligence = b.gaps.map((g) => ({
+      area: "", topic: g.item, status: g.status, found: "",
+      question: g.question || "", why: g.why || "",
+      priority: g.priority || 2, evidence: g.evidence || [],
+    }));
+  }
+  return b;
+}
+
+/* ============================================================
+   Line charts
+   One shared builder for the trends band and the price graph. Both
+   are single-axis: the trends pair is two 0-100 series on one scale,
+   the price graph is one series on its own. A hover crosshair reads
+   out every series at the nearest point.
+   ============================================================ */
+const CHARTS = {};
+let chartSeq = 0;
+
+function niceTicks(min, max, count) {
+  if (max <= min) return [min];
+  const raw = (max - min) / count;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const norm = raw / mag;
+  const step = (norm >= 5 ? 10 : norm >= 2.5 ? 5 : norm >= 1.2 ? 2 : 1) * mag;
+  const out = [];
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 0.001; v += step) out.push(+v.toFixed(6));
+  return out.length ? out : [min, max];
+}
+
+/* cfg: { series:[{name,color,points:[n]}], labels:[], height, yMin, yMax,
+         fmt(v), pad:{l,r,t,b}, area:bool } */
+function lineChart(cfg) {
+  const id = `ch${++chartSeq}`;
+  const W = cfg.width || 1000;
+  const H = cfg.height || 300;
+  const pad = Object.assign({ l: 46, r: 58, t: 14, b: 30 }, cfg.pad || {});
+  const n = cfg.labels.length;
+  const fmt = cfg.fmt || ((v) => String(Math.round(v)));
+
+  let lo = cfg.yMin;
+  let hi = cfg.yMax;
+  if (lo == null || hi == null) {
+    const all = cfg.series.flatMap((s) => s.points);
+    const dMin = Math.min(...all);
+    const dMax = Math.max(...all);
+    const slack = (dMax - dMin) * 0.14 || Math.abs(dMax || 1) * 0.02;
+    lo = lo == null ? dMin - slack : lo;
+    hi = hi == null ? dMax + slack : hi;
+  }
+  if (hi === lo) { hi = lo + 1; }
+
+  const x = (i) => pad.l + (n <= 1 ? 0 : (i * (W - pad.l - pad.r)) / (n - 1));
+  const y = (v) => pad.t + (1 - (v - lo) / (hi - lo)) * (H - pad.t - pad.b);
+
+  const ticks = cfg.ticks || niceTicks(lo, hi, 4);
+  const grid = ticks.map((t) => `
+    <line class="grid" x1="${pad.l}" y1="${y(t).toFixed(1)}" x2="${W - pad.r}" y2="${y(t).toFixed(1)}" vector-effect="non-scaling-stroke" />
+    <text class="axis-t" x="${pad.l - 9}" y="${(y(t) + 5).toFixed(1)}" text-anchor="end">${esc(fmt(t))}</text>`).join("");
+
+  // First, middle and last label only — a tick under every point is noise.
+  const xIdx = n <= 2 ? [0, n - 1] : [0, Math.floor((n - 1) / 2), n - 1];
+  const xLabels = xIdx.map((i, k) => `<text class="axis-t" x="${x(i).toFixed(1)}" y="${H - 8}" text-anchor="${k === 0 ? "start" : k === xIdx.length - 1 ? "end" : "middle"}">${esc(cfg.labels[i] || "")}</text>`).join("");
+
+  const marks = cfg.series.map((s, k) => {
+    const pts = s.points.map((v, i) => [x(i), y(v)]);
+    const line = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+    const base = y(Math.max(lo, Math.min(hi, 0))).toFixed(1);
+    const fill = cfg.area === false ? "" :
+      `<path d="${line} L${pts[pts.length - 1][0].toFixed(1)} ${base} L${pts[0][0].toFixed(1)} ${base} Z" fill="${s.color}" opacity="0.1" />`;
+    return `${fill}<path d="${line}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />`;
+  }).join("");
+
+  // Direct label at each line's end, so identity never rests on colour alone.
+  // An explicit "" opts out — a single-series chart is named by its header.
+  const endLabels = cfg.series.map((s) => {
+    const tag = s.short === undefined ? s.name : s.short;
+    if (!tag) return "";
+    const last = s.points[s.points.length - 1];
+    return `<text class="end-t" x="${W - pad.r + 8}" y="${(y(last) + 5).toFixed(1)}" fill="${s.color}">${esc(tag)}</text>`;
+  }).join("");
+
+  const dots = cfg.series.map((s, k) => `<circle class="cdot" data-s="${k}" r="4.5" fill="${s.color}" cx="0" cy="0" />`).join("");
+
+  CHARTS[id] = { cfg, W, H, pad, lo, hi, n, fmt, xOf: x, yOf: y };
+
+  return `<div class="chart" id="${id}">
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(cfg.alt || "")}">
+      ${grid}${xLabels}${marks}${endLabels}
+      <line class="cross" x1="0" y1="${pad.t}" x2="0" y2="${H - pad.b}" vector-effect="non-scaling-stroke" />
+      ${dots}
+      <rect x="${pad.l}" y="0" width="${W - pad.l - pad.r}" height="${H}" fill="transparent" class="hit" />
+    </svg>
+    <div class="chart-tip"></div>
+  </div>`;
+}
+
+function wireCharts(root) {
+  root.querySelectorAll(".chart").forEach((box) => {
+    const st = CHARTS[box.id];
+    if (!st) return;
+    const svg = box.querySelector("svg");
+    const cross = box.querySelector(".cross");
+    const dots = Array.from(box.querySelectorAll(".cdot"));
+    const tip = box.querySelector(".chart-tip");
+
+    const move = (e) => {
+      const r = svg.getBoundingClientRect();
+      if (!r.width) return;
+      const vx = ((e.clientX - r.left) / r.width) * st.W;
+      const span = st.W - st.pad.l - st.pad.r;
+      const frac = span > 0 ? (vx - st.pad.l) / span : 0;
+      const i = Math.max(0, Math.min(st.n - 1, Math.round(frac * (st.n - 1))));
+      const px = st.xOf(i);
+
+      box.classList.add("hot");
+      cross.setAttribute("x1", px.toFixed(1));
+      cross.setAttribute("x2", px.toFixed(1));
+      st.cfg.series.forEach((s, k) => {
+        if (!dots[k]) return;
+        dots[k].setAttribute("cx", px.toFixed(1));
+        dots[k].setAttribute("cy", st.yOf(s.points[i]).toFixed(1));
+      });
+
+      tip.innerHTML = `<div class="when">${esc((st.cfg.tipLabels || st.cfg.labels)[i] || "")}</div>` +
+        st.cfg.series.map((s) => `<div class="r"><em style="background:${s.color}"></em><span>${esc(s.name)}</span><b>${esc(st.fmt(s.points[i]))}</b></div>`).join("");
+
+      // Flip the tip to the left of the crosshair once it would run off the end.
+      const leftPct = (px / st.W) * 100;
+      const flip = leftPct > 62;
+      tip.style.left = `${leftPct}%`;
+      tip.style.transform = flip ? "translateX(calc(-100% - 12px))" : "translateX(12px)";
+    };
+
+    svg.addEventListener("pointermove", move);
+    svg.addEventListener("pointerdown", move);
+    svg.addEventListener("pointerleave", () => box.classList.remove("hot"));
+  });
+}
+
+/* ============================================================
+   Decks — free horizontal scroll. Cards keep a fixed width so the
+   one at the edge is deliberately half cut off, and the arrows
+   glide by about a screenful on an eased animation.
+   ============================================================ */
+const ARROW_L = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>';
+const ARROW_R = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>';
+
+function deckNav(id, label) {
+  return `<span class="deck-nav">
+    <button class="deck-arrow" type="button" data-deck="${id}" data-dir="-1" aria-label="Previous ${label}">${ARROW_L}</button>
+    <button class="deck-arrow" type="button" data-deck="${id}" data-dir="1" aria-label="Next ${label}">${ARROW_R}</button>
+  </span>`;
+}
+
+/* Native scroll-behavior:smooth varies by browser and cuts off if a second
+   click lands mid-flight. This eases every glide the same way and retargets
+   cleanly when you click the arrow twice in a row. */
+function glide(el, to) {
+  const max = el.scrollWidth - el.clientWidth;
+  const target = Math.max(0, Math.min(to, max));
+  if (REDUCED) { el.scrollLeft = target; return; }
+  const from = el.scrollLeft;
+  const dist = target - from;
+  if (Math.abs(dist) < 1) return;
+  if (el._raf) cancelAnimationFrame(el._raf);
+  const ms = Math.min(620, 260 + Math.abs(dist) * 0.38);
+  const t0 = performance.now();
+  const ease = (p) => 1 - Math.pow(1 - p, 3);
+  const step = (now) => {
+    const p = Math.min(1, (now - t0) / ms);
+    el.scrollLeft = from + dist * ease(p);
+    el._raf = p < 1 ? requestAnimationFrame(step) : null;
+  };
+  el._raf = requestAnimationFrame(step);
+}
+
+function deckSync(id) {
+  const deck = document.getElementById(id);
+  if (!deck) return;
+  // Measure against the unconstrained layout before deciding it fits.
+  deck.classList.remove("fit");
+  const overflows = deck.scrollWidth > deck.clientWidth + 2;
+  if (!overflows && !deck.classList.contains("solo")) deck.classList.add("fit");
+
+  const max = deck.scrollWidth - deck.clientWidth;
+  const arrows = document.querySelectorAll(`.deck-arrow[data-deck="${id}"]`);
+  arrows.forEach((a) => {
+    a.disabled = max <= 2 || (a.dataset.dir === "-1" ? deck.scrollLeft <= 2 : deck.scrollLeft >= max - 2);
+  });
+
+  const rail = document.querySelector(`[data-rail="${id}"]`);
+  if (rail) {
+    const bar = rail.querySelector("i");
+    const frac = deck.scrollWidth > 0 ? Math.min(1, deck.clientWidth / deck.scrollWidth) : 1;
+    bar.style.width = `${frac * 100}%`;
+    bar.style.marginLeft = `${(max > 0 ? deck.scrollLeft / max : 0) * (100 - frac * 100)}%`;
+    rail.style.display = max <= 2 ? "none" : "";
+  }
+}
+
+function wireDecks(root) {
+  root.querySelectorAll(".deck[id]").forEach((deck) => {
+    let ticking = false;
+    deck.addEventListener("scroll", () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => { ticking = false; deckSync(deck.id); });
+    }, { passive: true });
+    deckSync(deck.id);
+  });
+  root.querySelectorAll(".deck-arrow").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const deck = document.getElementById(btn.dataset.deck);
+      if (!deck) return;
+      glide(deck, deck.scrollLeft + deck.clientWidth * 0.82 * Number(btn.dataset.dir));
+    });
+  });
+}
+
+window.addEventListener("resize", () => {
+  document.querySelectorAll(".deck[id]").forEach((d) => deckSync(d.id));
+});
+
+/* ---------- Drawer ---------- */
+function openDrawer() {
+  $("#drawer").classList.add("on");
+  $("#drawer").setAttribute("aria-hidden", "false");
+  $("#scrim").classList.add("on");
+  $("#hist-btn").setAttribute("aria-expanded", "true");
+}
+function closeDrawer() {
+  $("#drawer").classList.remove("on");
+  $("#drawer").setAttribute("aria-hidden", "true");
+  $("#scrim").classList.remove("on");
+  $("#hist-btn").setAttribute("aria-expanded", "false");
+}
+$("#hist-btn").addEventListener("click", () => {
+  if ($("#drawer").classList.contains("on")) closeDrawer();
+  else openDrawer();
+});
+$("#drawer-x").addEventListener("click", closeDrawer);
+$("#scrim").addEventListener("click", closeDrawer);
 
 async function loadUsage() {
   const res = await fetch("/api/usage");
-  const data = await res.json();
-  $("#stat-used").textContent = data.live_searches;
-  $("#stat-remaining").textContent = data.remainder;
-  const pill = $("#replay-indicator");
-  if (data.replay_mode) {
-    pill.textContent = "Replay on";
-    pill.classList.remove("off");
-  } else {
-    pill.textContent = "Replay off";
-    pill.classList.add("off");
-  }
+  const d = await res.json();
+  $("#stat-used").textContent = d.live_searches;
+  $("#stat-left").textContent = d.remainder;
+  const mode = $("#stat-mode");
+  mode.textContent = d.replay_mode ? "Replay mode" : "Live searches";
+  mode.classList.toggle("live", !!d.replay_mode);
 }
 
-async function loadBriefingList(activeId) {
+async function loadList(activeId) {
   const res = await fetch("/api/briefings");
   const items = await res.json();
-  const container = $("#briefing-list");
+  const box = $("#rail-list");
+  $("#hist-n").textContent = items.length;
   if (!items.length) {
-    container.innerHTML = '<div class="empty-state">None yet.</div>';
+    box.innerHTML = '<div class="empty">Nothing saved yet.</div>';
     return;
   }
-  container.innerHTML = items.map((b) => `
-    <button class="briefing-item${b.id === activeId ? ' active' : ''}" data-id="${esc(b.id)}">
-      <span class="company">${esc(b.company)}</span>
-      <span class="date">${fmtDate(b.generated_at)}</span>
-    </button>
-  `).join("");
-  container.querySelectorAll(".briefing-item").forEach((btn) => {
-    btn.addEventListener("click", () => loadBriefingById(btn.dataset.id));
+  box.innerHTML = items.map((b) => `
+    <button class="rail-item" data-id="${esc(b.id)}" aria-current="${b.id === activeId}">
+      <span class="co">${esc(b.company)}</span>
+      <span class="on">${fmtDate(b.generated_at)}</span>
+    </button>`).join("");
+  box.querySelectorAll(".rail-item").forEach((btn) => {
+    btn.addEventListener("click", () => { closeDrawer(); openBriefing(btn.dataset.id); });
   });
 }
 
-async function loadBriefingById(id) {
+async function openBriefing(id) {
   const res = await fetch(`/api/briefings/${id}`);
   if (!res.ok) return;
-  renderBriefing(await res.json());
-  loadBriefingList(id);
+  render(await res.json());
+  loadList(id);
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function renderScorecard(scorecard, evidenceMap) {
-  $("#scorecard-grid").innerHTML = (scorecard || []).map((s) => `
-    <div class="score-tile" data-dim="${esc(s.dimension)}">
-      <div class="dim">${esc(s.dimension)}</div>
-      <div class="score-row"><span class="val">${s.score}</span><span class="of5">/5</span></div>
-      <div class="rationale">${esc(s.rationale)}${evidenceChips(s.evidence, evidenceMap)}</div>
+/* ============================================================
+   Panels
+   ============================================================ */
+function head(title, kind, right) {
+  return `<div class="phead"><span class="ttl${kind ? ` ttl-${kind}` : ""}">${title}</span>${right || ""}</div>`;
+}
+
+function heroPanel(b) {
+  const v = (b.market || {}).verdict || "Mixed";
+  const ov = b.overview || {};
+  const hiring = b.hiring;
+  const stats = [];
+  if (hiring) {
+    stats.push(`<div class="hero-stat"><span class="v">${hiring.total_roles}</span><span class="k">Open roles</span></div>`);
+    stats.push(`<div class="hero-stat"><span class="v">${Math.round((hiring.ml_share || 0) * 100)}%</span><span class="k">ML &amp; research</span></div>`);
+  }
+  stats.push(`<div class="hero-stat"><span class="v">${Object.keys(EV).length}</span><span class="k">Sources</span></div>`);
+  return `<section class="hero c12" style="--i:0">
+    <div class="hero-main">
+      <h1 class="display">${esc(b.company)}</h1>
+      ${ov.one_liner ? `<p class="liner">${esc(ov.one_liner)}</p>` : ""}
+      <div class="hero-meta">
+        <span class="tag">${esc(b.category)}</span>
+        <span class="tag"><a href="${esc(b.website)}" target="_blank" rel="noopener">${esc(hostOf(b.website) || b.website)}</a></span>
+        <span class="tag">Compiled ${fmtDate(b.generated_at)}</span>
+      </div>
     </div>
-  `).join("");
-  document.querySelectorAll(".score-tile").forEach((tile) => {
-    tile.addEventListener("click", () => tile.classList.toggle("expanded"));
-  });
+    <div class="hero-side">
+      <span class="verdict v-${esc(v)}"><i></i>${esc(v)} market</span>
+      <div class="hero-stats">${stats.join("")}</div>
+    </div>
+  </section>`;
 }
 
-function renderQuestions(questions) {
-  currentQuestions = questions || [];
-  const showAll = $("#questions-list").dataset.expanded === "1";
-  const visible = showAll ? currentQuestions : currentQuestions.slice(0, 6);
-  $("#questions-list").innerHTML = visible.map((q) => `
-    <li>${esc(q.text)}${q.why ? `<span class="why">${esc(q.why)}</span>` : ""}</li>
-  `).join("");
-  const moreBtn = $("#questions-more");
-  moreBtn.style.display = currentQuestions.length > 6 ? "inline-block" : "none";
-  moreBtn.textContent = showAll ? "Show fewer" : `Show ${currentQuestions.length - 6} more`;
+function overviewPanel(b) {
+  const ov = b.overview || {};
+  const facts = (b.key_facts || []).map((f) => `
+    <div class="fact">
+      <span class="k">${esc(f.label)}${srcDot(f.evidence)}</span>
+      <span class="v">${esc(f.value)}</span>
+    </div>`).join("");
+  return `<section class="panel c8" style="--i:1">
+    ${head("What this company is")}
+    <div class="pbody">
+      <p class="prose">${esc(ov.paragraph) || '<span class="empty">No overview in available evidence.</span>'}${srcDot(ov.evidence)}</p>
+      ${facts ? `<div class="facts">${facts}</div>` : ""}
+    </div>
+  </section>`;
 }
 
-$("#questions-more").addEventListener("click", () => {
-  const list = $("#questions-list");
-  list.dataset.expanded = list.dataset.expanded === "1" ? "0" : "1";
-  renderQuestions(currentQuestions);
-});
+function scorePanel(b) {
+  const rows = (b.scorecard || []).map((s) => {
+    const segs = [1, 2, 3, 4, 5].map((n) => `<i class="${n <= s.score ? "f" : ""}"></i>`).join("");
+    return `<div class="meter ${scoreClass(s.score)}" role="button" tabindex="0" aria-expanded="false">
+      <span class="meter-top">
+        <span class="meter-dim">${esc(s.dimension)}</span>
+        <span class="meter-val">${s.score}<span>/5</span></span>
+      </span>
+      <span class="meter-track">${segs}</span>
+      <span class="meter-why">${esc(s.rationale)}${srcDot(s.evidence)}</span>
+    </div>`;
+  }).join("");
+  return `<section class="panel c4" style="--i:2">
+    ${head("Scorecard", "", '<span class="spacer"></span><span class="n">tap a row</span>')}
+    <div class="pbody"><div class="meters">${rows || '<div class="empty">No scores produced.</div>'}</div></div>
+  </section>`;
+}
 
-function renderBriefing(b) {
-  $("#placeholder").style.display = "none";
-  $("#results").style.display = "block";
-  $("#briefing-title").textContent = b.company;
-  $("#briefing-meta").innerHTML = `${esc(b.category)} · <a href="${esc(b.website)}" target="_blank" rel="noopener">${esc(hostOf(b.website) || b.website)}</a> · ${fmtDate(b.generated_at)}`;
+/* The trends graph and the market read are one argument, so they are one
+   tile: how many people are searching for the company, plotted against the
+   category it sells into, with the written read beside it. Pairing them also
+   keeps the bento honest — a lone chart tile was shorter than whatever sat
+   next to it and left a hole. */
+function marketPanel(b) {
+  const m = b.market || {};
+  const t = (b.series || {}).trends;
+  const points = (m.points || []).map((p) => `<li>${esc(p.text)}${srcDot(p.evidence)}</li>`).join("");
 
-  const evidenceMap = b.evidence || {};
+  let left;
+  if (t && t.series && t.series.length) {
+    const colors = [C.s1, C.s2];
+    const series = t.series.slice(0, 2).map((s, i) => ({
+      name: s.name,
+      short: i === 0 ? "Brand" : "Category",
+      color: colors[i],
+      points: s.points,
+    }));
+    const legend = series.map((s) => `<div><em style="background:${s.color}"></em><b>${esc(s.short)}</b> ${esc(s.name)}</div>`).join("");
+    const reads = t.series.slice(0, 2).map((s, i) => {
+      const first = s.points[0];
+      const delta = first > 0 ? Math.round(((s.latest - first) / first) * 100) : null;
+      return `<div class="read-i">
+        <span class="k"><em style="background:${colors[i]}"></em>${esc(i === 0 ? "Brand" : "Category")}</span>
+        <span class="v">${s.average}<small> avg</small></span>
+        <span class="k" style="margin-top:4px">${delta == null ? "peak " + s.peak : (delta >= 0 ? "+" : "") + delta + "% over the year"}</span>
+      </div>`;
+    }).join("");
+    const chart = lineChart({
+      series,
+      labels: t.labels,
+      tipLabels: t.full_labels,
+      height: 310,
+      yMin: 0,
+      yMax: 100,
+      ticks: [0, 25, 50, 75, 100],
+      pad: { l: 46, r: 92, t: 14, b: 30 },
+      alt: `Google Trends search interest, ${series.map((s) => s.name).join(" and ")}`,
+    });
+    left = `<div class="legend">${legend}</div>${chart}<div class="read">${reads}</div>`;
+  } else {
+    left = '<div class="empty">Google Trends returned no timeline for this company and category.</div>';
+  }
 
-  renderScorecard(b.scorecard, evidenceMap);
+  return `<section class="panel c12" style="--i:3">
+    ${head("Market read", "lime", '<span class="spacer"></span><span class="n">search interest, 12 months · Google Trends</span>')}
+    <div class="pbody">
+      <div class="market-wrap">
+        <div>${left}</div>
+        <div>
+          <div class="verdict-line">${esc(m.verdict_text)}${srcDot(m.verdict_evidence)}</div>
+          <ul class="points">${points || '<li class="empty">No supporting detail found.</li>'}</ul>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
 
-  $("#company-summary").innerHTML = renderStatementsInline(b.company_summary, evidenceMap);
+function competitorPanel(b) {
+  const rows = (b.competitors || []).map((s) => `<div class="row-i">${esc(s.text)}${srcDot(s.evidence)}</div>`).join("");
+  return `<section class="panel c4" style="--i:5">
+    ${head("Competitors")}
+    <div class="pbody"><div class="rows">${rows || '<div class="empty">No competitor detail found.</div>'}</div></div>
+  </section>`;
+}
 
-  const market = b.market || {};
-  const tag = $("#verdict-tag");
-  tag.textContent = market.verdict || "Mixed";
-  tag.className = `verdict-tag verdict-${market.verdict || "Mixed"}`;
-  $("#verdict-text").innerHTML = `${esc(market.verdict_text)}${evidenceChips(market.verdict_evidence, evidenceMap)}`;
-  $("#market-points").innerHTML = (market.points || []).map((p) => `
-    <li>${esc(p.text)}${evidenceChips(p.evidence, evidenceMap)}</li>
-  `).join("") || '<li class="empty-state">No supporting detail found.</li>';
+function newsPanel(b) {
+  const items = (b.news_highlights || []).map((h) => {
+    const ev = EV[h.evidence && h.evidence[0]];
+    if (!ev) return "";
+    return `<div class="news-i">
+      <div class="news-head">
+        <span class="news-date">${fmtShort(ev.published_date)}</span>
+        <span class="news-src">${esc(hostOf(ev.url))}</span>
+      </div>
+      <a class="t" href="${esc(ev.url)}" target="_blank" rel="noopener">${esc(ev.title)}</a>
+      <div class="so">${esc(h.so_what)}</div>
+    </div>`;
+  }).join("");
+  return `<section class="panel c4" style="--i:6">
+    ${head("Latest news", "", `<span class="spacer"></span><span class="n">${(b.news_highlights || []).length}</span>`)}
+    <div class="pbody"><div class="news">${items || '<div class="empty">No recent coverage in the evidence.</div>'}</div></div>
+  </section>`;
+}
 
-  $("#section-competitors").innerHTML = (b.competitors || []).length
-    ? b.competitors.map((s) => `<div class="statement">${esc(s.text)}${evidenceChips(s.evidence, evidenceMap)}</div>`).join("")
-    : '<div class="empty-state">No competitor detail found.</div>';
+function pricingPanel(b) {
+  const c = b.commercial || {};
+  const nf = (v) => (!v || v === "Not found" || v === "Not reported") ? `<span class="nf">${esc(v || "Not found")}</span>` : esc(v);
+  const rows = (c.pricing_comparison || []).map((r) => {
+    const srcKey = String(r.pricing_source || "").split(" ")[0];
+    return `<tr>
+      <td class="subj">${esc(r.name)}</td>
+      <td>${nf(r.lowest_paid_plan)}${srcDot(r.evidence)}</td>
+      <td>${nf(r.free_tier)}</td>
+      <td>${nf(r.contact_sales_tier)}</td>
+      <td>${r.pricing_source && r.pricing_source !== "Not found" ? `<span class="src-pill src-${esc(srcKey)}">${esc(r.pricing_source)}</span>` : `<span class="nf">—</span>`}</td>
+    </tr>`;
+  }).join("");
+  return `<section class="panel c8" style="--i:7">
+    ${head("Pricing reality check")}
+    <div class="pbody"><div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Company</th><th>Lowest paid plan</th><th>Free tier</th><th>Contact sales</th><th>Source</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="5" class="empty">No pricing found.</td></tr>'}</tbody>
+    </table></div></div>
+  </section>`;
+}
 
-  const commercial = b.commercial || {};
-  $("#pricing-body").innerHTML = (commercial.pricing_comparison || []).map((r) => `
-    <tr>
-      <td>${esc(r.name)}</td>
-      <td>${esc(r.lowest_paid_plan)}${evidenceChips(r.evidence, evidenceMap)}</td>
-      <td>${esc(r.free_tier)}</td>
-      <td>${esc(r.contact_sales_tier)}</td>
-    </tr>
-  `).join("") || `<tr><td colspan="4" class="empty-state">Not found</td></tr>`;
+/* The listed comparable, with its intraday tape drawn rather than described.
+   One line, one axis, coloured by direction — lime up, terracotta down. */
+function comparablePanel(b) {
+  const quotes = ((b.series || {}).prices) || [];
+  const comps = (b.commercial || {}).listed_comparables || [];
 
-  const comparables = commercial.listed_comparables || [];
-  $("#comparables-wrap").innerHTML = comparables.length
-    ? `<table style="margin-top:14px;">
-        <thead><tr><th>Public comparable</th><th>Price</th><th>Mkt cap</th><th>Move</th></tr></thead>
-        <tbody>${comparables.map((r) => `
-          <tr>
-            <td>${esc(r.name)} <span style="color:var(--faint)">${esc(r.ticker)}</span></td>
-            <td>${esc(r.price)}</td>
-            <td>${esc(r.market_cap)}</td>
-            <td>${esc(r.price_movement)}${evidenceChips(r.evidence, evidenceMap)}</td>
-          </tr>
-        `).join("")}</tbody>
-      </table>`
-    : `<div class="empty-state" style="margin-top:14px;">No public comparable in this category.</div>`;
+  if (!quotes.length && !comps.length) {
+    return `<section class="panel c4" style="--i:8">
+      ${head("Public comparables", "lime")}
+      <div class="pbody"><div class="empty">No listed pure-play comparable in this category, so there is no public multiple to anchor a valuation against.</div></div>
+    </section>`;
+  }
 
-  $("#mismatches").innerHTML = (commercial.mismatches || []).length
-    ? commercial.mismatches.map((m) => `
-      <div class="mismatch-card">
+  const blocks = quotes.map((q) => {
+    const up = (q.change_pct || 0) > 0;
+    const down = (q.change_pct || 0) < 0;
+    const color = up ? C.s1 : down ? C.s2 : C.s3;
+    const chCls = up ? "ch-up" : down ? "ch-down" : "ch-flat";
+    const money = (v) => `${q.currency === "USD" ? "$" : ""}${Number(v).toFixed(2)}`;
+    const chart = lineChart({
+      series: [{ name: q.stock || q.name, short: "", color, points: q.points.map((p) => p.price) }],
+      labels: q.points.map((p) => p.label),
+      width: 560,
+      height: 250,
+      pad: { l: 62, r: 12, t: 12, b: 28 },
+      fmt: money,
+      alt: `${q.name} intraday price`,
+    });
+    return `<div style="margin-bottom:14px">
+      <div class="quote">
+        <span class="sym">${esc(q.stock || q.name)}</span>
+        <span class="ex">${esc(q.exchange)}</span>
+        <span class="px">${q.price != null ? money(q.price) : "—"}</span>
+        ${q.change_pct != null ? `<span class="ch ${chCls}">${q.change_pct > 0 ? "+" : ""}${q.change_pct}%</span>` : ""}
+      </div>
+      ${chart}
+      <div class="quote-foot">${esc(q.name)} · session range ${q.low != null ? money(q.low) : "—"}–${q.high != null ? money(q.high) : "—"}</div>
+    </div>`;
+  }).join("");
+
+  const table = comps.length ? `<div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Company</th><th>Price</th><th>Market cap</th><th>Move</th></tr></thead>
+      <tbody>${comps.map((r) => `<tr>
+        <td class="subj">${esc(r.name)} <span class="nf">${esc(r.ticker)}</span></td>
+        <td>${esc(r.price)}</td>
+        <td>${esc(r.market_cap)}</td>
+        <td>${esc(r.price_movement)}${srcDot(r.evidence)}</td>
+      </tr>`).join("")}</tbody>
+    </table></div>` : "";
+
+  return `<section class="panel c4" style="--i:8">
+    ${head("Public comparables", "lime")}
+    <div class="pbody">${blocks}${table}</div>
+  </section>`;
+}
+
+function mismatchPanel(b) {
+  const ms = (b.commercial || {}).mismatches || [];
+  const body = ms.length
+    ? ms.map((m) => `<div class="mm">
+        <div class="rule">${esc(String(m.rule).replace(/_/g, " "))}</div>
         <div class="claim">${esc(m.claim)}</div>
-        <div class="pricing-note">${esc(m.pricing_note)}</div>
-        <div class="why">${esc(m.why_it_matters)} ${evidenceChips(m.evidence, evidenceMap)}</div>
-        <div class="question">${esc(m.question)}</div>
-      </div>
-    `).join("")
-    : `<div class="empty-state">No mismatches detected.</div>`;
+        <div class="note">${esc(m.pricing_note)}</div>
+        <div class="why">${esc(m.why_it_matters)}${srcDot(m.evidence)}</div>
+        ${m.question ? `<div class="q">${esc(m.question)}</div>` : ""}
+      </div>`).join("")
+    : '<div class="empty">No pricing mismatch fired against the four rules.</div>';
+  return `<section class="panel c7" style="--i:9">
+    ${head("Pricing mismatches", "terra", `<span class="spacer"></span><span class="n">${ms.length}</span>`)}
+    <div class="pbody">${body}</div>
+  </section>`;
+}
 
-  $("#risk-list").innerHTML = (b.risks || []).length
-    ? b.risks.map((r) => `
-      <div class="risk-row">
-        <span class="risk-cat cat-${esc(r.category)}">${esc(r.category.replace('_', ' '))}</span>
-        <span>${esc(r.text)}${evidenceChips(r.evidence, evidenceMap)}</span>
-      </div>
-    `).join("")
-    : `<div class="empty-state">No risk findings in available evidence.</div>`;
-
-  $("#questions-list").dataset.expanded = "0";
-  renderQuestions(b.questions);
-
-  $("#gap-list").innerHTML = (b.gaps || []).map((g) => `
-    <div class="gap-row">
-      <span class="dot dot-${esc(g.status)}"></span>
-      <span class="item">${esc(g.item)}</span>
-      <span class="priority">p${g.priority}</span>
+/* However many risks the evidence supports — one, three, eight — they all
+   ride the same band. Nothing here expects a particular count. */
+function riskPanel(b) {
+  const rs = b.risks || [];
+  if (!rs.length) {
+    return `<section class="panel c5" style="--i:10">
+      ${head("Risks", "terra", '<span class="spacer"></span><span class="n">0</span>')}
+      <div class="pbody"><div class="empty">No lawsuits, regulatory actions or founder-history flags in the evidence.</div></div>
+    </section>`;
+  }
+  const slides = rs.map((r) => `<article class="risk-i">
+      <span class="cat cat-${esc(r.category)}">${esc(String(r.category).replace(/_/g, " "))}</span>
+      <div class="txt">${esc(r.text)}${srcDot(r.evidence)}</div>
+    </article>`).join("");
+  return `<section class="panel c5" style="--i:10">
+    ${head("Risks", "terra", `<span class="n">${rs.length}</span><span class="spacer"></span>${deckNav("risk-deck", "risk")}`)}
+    <div class="pbody flush">
+      <div class="deck" id="risk-deck" style="--card:330px">${slides}</div>
+      <div class="deck-rail" data-rail="risk-deck"><i></i></div>
     </div>
-  `).join("");
+  </section>`;
+}
+
+function hiringPanel(b) {
+  const h = b.hiring;
+  if (!h) {
+    return `<section class="panel c4" style="--i:11">
+      ${head("Hiring signal", "lime")}
+      <div class="pbody"><div class="empty">No open roles found.</div></div>
+    </section>`;
+  }
+  const c = h.counts || {};
+  const total = h.total_roles || 1;
+  // Ordered so no two touching segments are a colour pair a colourblind
+  // reader would confuse; every row is labelled and counted regardless.
+  const parts = [
+    ["mix-1", C.s1, "Engineering", c["Engineering"] || 0],
+    ["mix-2", C.s2, "ML &amp; research", c["ML and research"] || 0],
+    ["mix-3", C.s3, "Sales &amp; marketing", c["Sales and marketing"] || 0],
+    ["mix-4", C.s4, "Other", c["Other"] || 0],
+  ];
+  return `<section class="panel c4" style="--i:11">
+    ${head("Hiring signal", "lime", `<span class="spacer"></span><span class="n">${h.total_roles}</span>`)}
+    <div class="pbody">
+      <div class="mix">
+        <div class="mix-bar">${parts.map(([cls, , , n]) => n ? `<i class="${cls}" style="flex:${n}"></i>` : "").join("")}</div>
+        <div class="mix-key">
+          ${parts.map(([, col, label, n]) => `<div><em style="background:${col}"></em><span>${label}</span><b>${n}</b></div>`).join("")}
+        </div>
+        <div class="mix-foot">Classified in code from job titles.${srcDot(h.evidence)}</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function trajectoryPanel(b) {
+  const t = b.trajectory || {};
+  const sigs = (t.signals || []).map((s) => `<div class="sig">${esc(s.text)}${srcDot(s.evidence)}<span class="conf">${esc(s.confidence)}</span></div>`).join("");
+  return `<section class="panel c12" style="--i:12">
+    ${head("Where this company is heading")}
+    <div class="pbody">
+      <div class="traj-wrap">
+        <div>
+          ${t.headline ? `<p class="traj-head display">${esc(t.headline)}</p>` : ""}
+          <p class="prose">${esc(t.paragraph) || '<span class="empty">No forward read produced.</span>'}</p>
+        </div>
+        <div>${sigs || '<div class="empty">No directional signals found.</div>'}</div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function diligencePanel(b) {
+  const rows = b.diligence || [];
+  const n = (s) => rows.filter((r) => r.status === s).length;
+  const btn = (f, label, count) =>
+    `<button type="button" data-f="${f}" aria-pressed="${f === "all"}">${label}<i>${count}</i></button>`;
+  return `<section class="panel c12" style="--i:13">
+    ${head("What's missing, and what to ask", "gold", `
+      <span class="seg" id="dil-seg">
+        ${btn("all", "All", rows.length)}
+        ${btn("Found", "Found", n("Found"))}
+        ${btn("Partial", "Partial", n("Partial"))}
+        ${btn("Missing", "Missing", n("Missing"))}
+      </span>
+      <span class="spacer"></span>
+      ${deckNav("dil-deck", "cards")}`)}
+    <div class="pbody flush">
+      <div class="deck" id="dil-deck" style="--card:320px"></div>
+      <div class="deck-rail" data-rail="dil-deck"><i></i></div>
+    </div>
+  </section>`;
+}
+
+function renderDiligence() {
+  const deck = document.getElementById("dil-deck");
+  if (!deck) return;
+  const rows = diligenceRows.filter((r) => diligenceFilter === "all" || r.status === diligenceFilter);
+  deck.classList.toggle("solo", rows.length === 0);
+  deck.innerHTML = rows.length ? rows.map((r) => `
+    <article class="dil-i">
+      <div class="dil-top">
+        <span class="st st-${esc(r.status)}">${esc(r.status)}</span>
+        <span class="pri pri-${r.priority}">p${r.priority}</span>
+        ${r.area ? `<span class="dil-area">${esc(r.area)}</span>` : ""}
+      </div>
+      <div class="dil-topic">${esc(r.topic)}</div>
+      <div class="dil-found">${esc(r.found)}${srcDot(r.evidence)}</div>
+      ${r.question ? `<div class="dil-q"><span class="qm">Ask</span>${esc(r.question)}${r.why ? `<div class="dil-why">${esc(r.why)}</div>` : ""}</div>` : ""}
+    </article>`).join("") : '<div class="empty">Nothing in this status.</div>';
+  deck.scrollLeft = 0;
+  deckSync("dil-deck");
+}
+
+/* ============================================================
+   Render
+   The order below is the bento. Each row's spans add to 12, and a
+   column that one panel would leave half empty holds a .stack of
+   two, so no tile is padded out to match a taller neighbour.
+   ============================================================ */
+function render(raw) {
+  const b = migrate(raw);
+  popClose();
+  EV = b.evidence || {};
+  $("#ghost").style.display = "none";
+  const sheet = $("#sheet");
+  sheet.style.display = "grid";
+  sheet.classList.remove("enter");
+
+  diligenceRows = b.diligence || [];
+  diligenceFilter = "all";
+
+  sheet.innerHTML = [
+    heroPanel(b),                                                       // 12
+    overviewPanel(b), scorePanel(b),                                    // 8 + 4
+    marketPanel(b),                                                     // 12 (chart + read)
+    newsPanel(b), pricingPanel(b),                                      // 4 + 8
+    comparablePanel(b), competitorPanel(b), hiringPanel(b),             // 4 + 4 + 4
+    mismatchPanel(b), riskPanel(b),                                     // 7 + 5
+    trajectoryPanel(b),                                                 // 12
+    diligencePanel(b),                                                  // 12
+  ].join("");
+
+  renderDiligence();
+  wireDecks(sheet);
+  wireCharts(sheet);
+
+  sheet.querySelectorAll(".meter").forEach((m) => {
+    const toggle = () => m.setAttribute("aria-expanded", m.getAttribute("aria-expanded") === "true" ? "false" : "true");
+    m.addEventListener("click", toggle);
+    m.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+  });
+
+  const seg = $("#dil-seg");
+  if (seg) {
+    seg.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        diligenceFilter = btn.dataset.f;
+        seg.querySelectorAll("button").forEach((o) => o.setAttribute("aria-pressed", String(o === btn)));
+        renderDiligence();
+      });
+    });
+  }
+
+  requestAnimationFrame(() => {
+    sheet.classList.add("enter");
+    document.querySelectorAll(".deck[id]").forEach((d) => deckSync(d.id));
+  });
 }
 
 function setProgress(pct, label) {
-  $("#progress-fill").style.width = `${pct}%`;
-  $("#progress-pct").textContent = `${Math.round(pct)}%`;
-  if (label) $("#progress-text").textContent = label;
+  $("#prog-fill").style.width = `${pct}%`;
+  $("#prog-pct").textContent = `${Math.round(pct)}%`;
+  if (label) $("#prog-text").textContent = label;
 }
 
-async function submitForm(evt) {
+async function submit(evt) {
   evt.preventDefault();
-  const btn = $("#generate-btn");
-  const banner = $("#error-banner");
-  const progress = $("#progress-wrap");
-  banner.style.display = "none";
+  const btn = $("#go");
+  const alertBox = $("#alert");
+  const prog = $("#prog");
+  alertBox.style.display = "none";
   btn.disabled = true;
-  btn.textContent = "Generating…";
-  progress.classList.add("active");
-  setProgress(0, "Starting…");
+  btn.textContent = "Generating";
+  prog.classList.add("on");
+  setProgress(0, "Starting");
 
   const params = new URLSearchParams({
     company: $("#company").value.trim(),
@@ -660,21 +1623,18 @@ async function submitForm(evt) {
 
   try {
     const res = await fetch(`/api/briefing/stream?${params}`);
-    if (!res.ok || !res.body) {
-      throw new Error(`Request failed with status ${res.status}`);
-    }
+    if (!res.ok || !res.body) throw new Error(`The request failed with status ${res.status}.`);
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
-    let finalBriefing = null;
+    let final = null;
     let streamError = null;
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-
       let boundary;
       while ((boundary = buffer.indexOf("\n\n")) !== -1) {
         const chunk = buffer.slice(0, boundary);
@@ -682,39 +1642,30 @@ async function submitForm(evt) {
         const line = chunk.split("\n").find((l) => l.startsWith("data: "));
         if (!line) continue;
         const event = JSON.parse(line.slice(6));
-
-        if (event.error) {
-          streamError = event.detail || "Something went wrong.";
-          continue;
-        }
-        if (typeof event.progress === "number") {
-          setProgress(event.progress, event.label);
-        }
-        if (event.briefing) {
-          finalBriefing = event.briefing;
-        }
+        if (event.error) { streamError = event.detail || "Something went wrong."; continue; }
+        if (typeof event.progress === "number") setProgress(event.progress, event.label);
+        if (event.briefing) final = event.briefing;
       }
     }
 
     if (streamError) throw new Error(streamError);
-    if (!finalBriefing) throw new Error("The stream ended without a finished briefing.");
+    if (!final) throw new Error("The stream ended before a briefing was finished.");
 
-    renderBriefing(finalBriefing);
-    await Promise.all([loadUsage(), loadBriefingList(finalBriefing.id)]);
+    render(final);
+    await Promise.all([loadUsage(), loadList(final.id)]);
   } catch (err) {
-    banner.textContent = err.message;
-    banner.style.display = "block";
+    alertBox.textContent = err.message;
+    alertBox.style.display = "block";
   } finally {
     btn.disabled = false;
-    btn.textContent = "Generate";
-    progress.classList.remove("active");
+    btn.textContent = "Generate briefing";
+    prog.classList.remove("on");
   }
 }
 
-$("#briefing-form").addEventListener("submit", submitForm);
-
+$("#form").addEventListener("submit", submit);
 loadUsage();
-loadBriefingList();
+loadList();
 </script>
 </body>
 </html>

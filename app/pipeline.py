@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 from datetime import datetime, timezone
 from typing import Any
 
-from . import analyzer, planner, roles, storage, validator
+from . import analyzer, planner, roles, series, storage, validator
 from .evidence import IdCounter
 from .normalizers import normalize
 from .serp_client import SerpResponse, search
@@ -77,8 +77,13 @@ async def _run_wave(
     return evidence, search_log, raw_by_no
 
 
-def _hiring_signal_statement(job_evidence: list[dict[str, Any]], evidence_map: dict[str, dict]) -> dict[str, Any] | None:
-    """Builds the code-computed role-mix statement, folded into the company summary."""
+def _hiring_signal(job_evidence: list[dict[str, Any]], evidence_map: dict[str, dict]) -> dict[str, Any] | None:
+    """Builds the code-computed role-mix signal shown in the briefing.
+
+    The same numbers are handed to the analysis call as settled fact (see
+    `role_mix_note`), so the model reasons from them instead of re-deriving the mix
+    from truncated job snippets and contradicting the figure on screen.
+    """
     if not job_evidence:
         return None
     titles = [item["title"] for item in job_evidence]
@@ -92,7 +97,33 @@ def _hiring_signal_statement(job_evidence: list[dict[str, Any]], evidence_map: d
     )
     evidence_ids = [item["id"] for item in job_evidence]
     confidence = "Corroborated" if is_corroborated(evidence_ids, evidence_map) else "Single source"
-    return {"text": text, "confidence": confidence, "evidence": evidence_ids}
+    return {
+        "text": text,
+        "confidence": confidence,
+        "evidence": evidence_ids,
+        "total_roles": total,
+        "counts": counts,
+        "ml_share": round(ml_share, 3),
+        "titles": titles[:8],
+    }
+
+
+def role_mix_note(hiring: dict[str, Any] | None) -> str | None:
+    """Phrases the computed role mix for the analysis prompt."""
+    if hiring is None:
+        return None
+    counts = hiring["counts"]
+    cited = ", ".join(hiring["evidence"])
+    return (
+        f"- Open roles found for this company: {hiring['total_roles']} "
+        f"(evidence {cited}).\n"
+        f"- Role mix, classified in code from the job titles: "
+        f"Engineering {counts['Engineering']}, ML and research {counts['ML and research']}, "
+        f"Sales and marketing {counts['Sales and marketing']}, Other {counts['Other']}.\n"
+        f"- ML and research share of open roles: {hiring['ml_share']:.0%}.\n"
+        f"- Treat the presence or absence of ML/research roles as answered by these numbers; "
+        f"do not mark it unknown, and do not ask the founders whether such roles exist."
+    )
 
 
 async def run_pipeline_steps(company: str, website: str, category: str, gl: str = "us") -> AsyncIterator[dict[str, Any]]:
@@ -111,7 +142,7 @@ async def run_pipeline_steps(company: str, website: str, category: str, gl: str 
     # Steps 2-3: wave 1
     yield {"progress": 5, "label": "Running 11 searches"}
     wave1_searches = planner.plan_wave_1(company, website, category, gl)
-    wave1_evidence, wave1_log, _ = await _run_wave(wave1_searches, id_counter, company, website, category)
+    wave1_evidence, wave1_log, wave1_raw = await _run_wave(wave1_searches, id_counter, company, website, category)
     yield {"progress": 35, "label": "Reading the evidence"}
 
     # Step 4: entity call
@@ -124,27 +155,29 @@ async def run_pipeline_steps(company: str, website: str, category: str, gl: str 
     # Steps 5-6: wave 2
     yield {"progress": 48, "label": "Running 5 more searches"}
     wave2_searches = planner.plan_wave_2(competitors, tickers, gl)
-    wave2_evidence, wave2_log, _ = await _run_wave(wave2_searches, id_counter, company, website, category)
+    wave2_evidence, wave2_log, wave2_raw = await _run_wave(wave2_searches, id_counter, company, website, category)
+
+    # The trends timeline and the price graphs only exist in the raw responses —
+    # the normalizers reduce both to a sentence — so they are pulled out here.
+    chart_series = series.build_series({**wave1_raw, **wave2_raw}, company, category)
 
     all_evidence = wave1_evidence + wave2_evidence
     evidence_map = {item["id"]: item for item in all_evidence}
     search_log = sorted(wave1_log + wave2_log, key=lambda s: s["number"])
 
-    # Step 7: role mix (code, from search 8's evidence), folded into the company summary
+    # Step 7: role mix (code, from search 8's evidence), handed to the analysis call as fact
     job_evidence = [item for item in wave1_evidence if item["search_no"] == 8]
-    hiring_signal = _hiring_signal_statement(job_evidence, evidence_map)
+    hiring = _hiring_signal(job_evidence, evidence_map)
 
     # Step 8: analysis call
     yield {"progress": 62, "label": "Analyzing the evidence"}
-    analysis = await analyzer.call_analysis(company, website, category, all_evidence)
+    analysis = await analyzer.call_analysis(
+        company, website, category, all_evidence, role_mix_note(hiring)
+    )
     yield {"progress": 90, "label": "Validating findings"}
 
     # Step 9: validate output
     validated = validator.validate_output(analysis, evidence_map)
-    company_summary = validated["company_summary"]
-    if hiring_signal is not None:
-        company_summary = company_summary + [hiring_signal]
-    validated["company_summary"] = company_summary
 
     briefing = {
         "id": str(uuid.uuid4()),
@@ -153,14 +186,18 @@ async def run_pipeline_steps(company: str, website: str, category: str, gl: str 
         "category": category,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "searches": search_log,
-        "company_summary": validated["company_summary"],
+        "series": chart_series,
+        "overview": validated["overview"],
+        "key_facts": validated["key_facts"],
+        "hiring": hiring,
         "market": validated["market"],
         "competitors": validated["competitors"],
+        "news_highlights": validated["news_highlights"],
+        "trajectory": validated["trajectory"],
         "risks": validated["risks"],
         "commercial": validated["commercial"],
         "scorecard": validated["scorecard"],
-        "gaps": validated["gaps"],
-        "questions": validated["questions"],
+        "diligence": validated["diligence"],
         "evidence": evidence_map,
     }
 

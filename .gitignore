@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 .env
 data/*.db
+saved_briefings/
+assets/

@@ -15,19 +15,34 @@ FIXTURE_BY_SEARCH_NO = {
 }
 
 STUB_ANALYSIS = {
-    "company_summary": [
-        {"text": "Acme AI builds a legal research assistant.", "confidence": "Single source", "evidence": ["e01"]}
-    ],
+    "overview": {
+        "one_liner": "Acme AI builds a legal research assistant.",
+        "paragraph": "Acme AI builds a legal research assistant for in-house counsel.",
+        "evidence": ["e01"],
+    },
+    "key_facts": [{"label": "Latest round", "value": "$14M Series A", "evidence": ["e01"]}],
     "market": {"verdict": "Expanding", "verdict_text": "Rising interest.", "verdict_evidence": ["e01"], "points": []},
     "competitors": [],
+    "news_highlights": [],
+    "trajectory": {"headline": "Moving upmarket", "paragraph": "Forward read.", "signals": []},
     "risks": [],
     "commercial": {
         "pricing_comparison": [],
         "listed_comparables": [],
         "mismatches": [],
     },
-    "gaps": [],
-    "risk_questions": [{"text": "Risk question one?", "why": "w1"}, {"text": "Risk question two?", "why": "w2"}],
+    "diligence": [
+        {
+            "area": "Funding and investors",
+            "topic": "Series A use of proceeds",
+            "status": "Found",
+            "found": "Raised $14M.",
+            "question": "How much of the round is committed to headcount?",
+            "why": "Burn shapes the next raise.",
+            "priority": 1,
+            "evidence": ["e01"],
+        }
+    ],
     "scorecard": [],
 }
 
@@ -49,6 +64,8 @@ def mock_search(monkeypatch, fixtures_dir):
 
 @pytest.fixture
 def mock_analyzer(monkeypatch):
+    captured = {}
+
     async def fake_call_entities(company, website, category, evidence_items):
         return {
             "competitors": [
@@ -62,12 +79,13 @@ def mock_analyzer(monkeypatch):
             ],
         }
 
-    async def fake_call_analysis(company, website, category, evidence_items):
+    async def fake_call_analysis(company, website, category, evidence_items, role_mix_note=None):
+        captured["role_mix_note"] = role_mix_note
         return STUB_ANALYSIS
 
     monkeypatch.setattr(analyzer, "call_entities", fake_call_entities)
     monkeypatch.setattr(analyzer, "call_analysis", fake_call_analysis)
-    yield
+    yield captured
 
 
 @pytest.mark.asyncio
@@ -94,10 +112,33 @@ async def test_pipeline_saves_and_returns_briefing(mock_search, mock_analyzer):
 
 
 @pytest.mark.asyncio
-async def test_pipeline_company_summary_includes_code_computed_role_mix(mock_search, mock_analyzer):
+async def test_pipeline_reports_code_computed_role_mix(mock_search, mock_analyzer):
     briefing = await pipeline.run_pipeline("Acme AI", "https://acme.ai", "AI legal research assistant")
-    role_mix_statements = [s for s in briefing["company_summary"] if "Role mix" in s["text"]]
-    assert len(role_mix_statements) == 1
+    hiring = briefing["hiring"]
+    assert hiring["total_roles"] == sum(hiring["counts"].values())
+    assert "Role mix" in hiring["text"]
+    assert hiring["evidence"]
+
+
+@pytest.mark.asyncio
+async def test_pipeline_hands_the_role_mix_to_the_analysis_call(mock_search, mock_analyzer):
+    """The model must receive the counts the briefing displays, or it contradicts them."""
+    await pipeline.run_pipeline("Acme AI", "https://acme.ai", "AI legal research assistant")
+    note = mock_analyzer["role_mix_note"]
+    assert note is not None
+    assert "ML and research" in note
+    assert "do not ask the founders whether such roles exist" in note
+
+
+@pytest.mark.asyncio
+async def test_pipeline_briefing_carries_the_new_sections(mock_search, mock_analyzer):
+    briefing = await pipeline.run_pipeline("Acme AI", "https://acme.ai", "AI legal research assistant")
+    for key in ("overview", "key_facts", "trajectory", "news_highlights", "diligence", "hiring"):
+        assert key in briefing, key
+    # The old gap/question split is gone; questions now ride on the diligence rows.
+    assert "gaps" not in briefing
+    assert "questions" not in briefing
+    assert briefing["diligence"][0]["question"]
 
 
 @pytest.mark.asyncio

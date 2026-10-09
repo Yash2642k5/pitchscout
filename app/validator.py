@@ -6,18 +6,32 @@ Three jobs, matching pipeline step 9:
   - confidence rules: downgrade any Corroborated statement that fails the
     two-domain, non-duplicate-title rule to Single source; every scorecard
     dimension always carries a 1-5 score
-  - question count: assemble the final 10-15 ranked questions in order
-    (mismatch, then gap by priority, then risk) and truncate at 15
+  - diligence rows: a Found/Partial status has to be backed by a surviving
+    citation, rows are ranked by priority, and questions are de-duplicated
+
+The diligence list carries both findings and questions, so there is no
+separate question-assembly step: what the analyst asks lives on the same row
+as what the evidence already established.
 """
 
 from difflib import SequenceMatcher
 from typing import Any
 
-from .prompts import GAP_ITEMS, MARKET_VERDICTS, RISK_CATEGORIES, SCORECARD_DIMENSIONS
+from .prompts import (
+    DILIGENCE_AREAS,
+    DILIGENCE_STATUSES,
+    MARKET_VERDICTS,
+    RISK_CATEGORIES,
+    SCORECARD_DIMENSIONS,
+)
 
 SIMILARITY_THRESHOLD = 0.8
-MIN_QUESTIONS = 10
-MAX_QUESTIONS = 15
+MAX_DILIGENCE_ROWS = 14
+MAX_NEWS_HIGHLIGHTS = 6
+NO_EVIDENCE_TEXT = "Nothing in the evidence."
+FALLBACK_AREA = "Other"
+
+_AREA_ORDER = {area: i for i, area in enumerate(DILIGENCE_AREAS)}
 
 
 def _filter_ids(ids: list[str], evidence_map: dict[str, dict]) -> list[str]:
@@ -74,6 +88,33 @@ def validate_section(statements: list[dict], evidence_map: dict[str, dict]) -> l
     return out
 
 
+def validate_overview(overview: dict[str, Any], evidence_map: dict[str, dict]) -> dict[str, Any]:
+    """The opening paragraph. Kept even when uncited — it synthesises the whole evidence set."""
+    overview = overview or {}
+    if isinstance(overview, str):
+        overview = {"paragraph": overview}
+    return {
+        "one_liner": overview.get("one_liner", ""),
+        "paragraph": overview.get("paragraph", ""),
+        "evidence": _filter_ids(overview.get("evidence", []), evidence_map),
+    }
+
+
+def validate_key_facts(key_facts: list[dict], evidence_map: dict[str, dict]) -> list[dict]:
+    """Each fact is a factual claim, so an uncited one is dropped."""
+    out = []
+    for fact in key_facts or []:
+        if not isinstance(fact, dict):
+            continue
+        valid_ids = _filter_ids(fact.get("evidence", []), evidence_map)
+        label = (fact.get("label") or "").strip()
+        value = (fact.get("value") or "").strip()
+        if not valid_ids or not label or not value:
+            continue
+        out.append({"label": label, "value": value, "evidence": valid_ids})
+    return out
+
+
 def validate_market(market: dict[str, Any], evidence_map: dict[str, dict]) -> dict[str, Any]:
     market = market or {}
     verdict = market.get("verdict")
@@ -84,6 +125,52 @@ def validate_market(market: dict[str, Any], evidence_map: dict[str, dict]) -> di
         "verdict_text": market.get("verdict_text", ""),
         "verdict_evidence": _filter_ids(market.get("verdict_evidence", []), evidence_map),
         "points": validate_section(market.get("points", []), evidence_map),
+    }
+
+
+def _published_sort_key(item: dict[str, Any]) -> tuple[int, str]:
+    """Newest first; undated items sort last."""
+    date = item.get("published_date") or ""
+    return (0 if date else 1, _invert_date(date))
+
+
+def _invert_date(date: str) -> str:
+    # Descending sort on an ascending key: invert each digit so "2026" < "2025".
+    return "".join(str(9 - int(c)) if c.isdigit() else c for c in date)
+
+
+def validate_news(news: list[dict], evidence_map: dict[str, dict]) -> list[dict]:
+    """Resolves each highlight to one real evidence item and re-sorts newest first.
+
+    Ordering is enforced here rather than trusted from the model: the evidence map
+    already carries parsed dates, so the code can simply sort on them.
+    """
+    out = []
+    seen: set[str] = set()
+    for item in news or []:
+        if not isinstance(item, dict):
+            continue
+        valid_ids = _filter_ids(item.get("evidence", []), evidence_map)
+        so_what = (item.get("so_what") or "").strip()
+        if not valid_ids or not so_what:
+            continue
+        evidence_id = valid_ids[0]
+        if evidence_id in seen:
+            continue
+        seen.add(evidence_id)
+        out.append({"evidence": [evidence_id], "so_what": so_what})
+    out.sort(key=lambda h: _published_sort_key(evidence_map[h["evidence"][0]]))
+    return out[:MAX_NEWS_HIGHLIGHTS]
+
+
+def validate_trajectory(trajectory: dict[str, Any], evidence_map: dict[str, dict]) -> dict[str, Any]:
+    trajectory = trajectory or {}
+    if isinstance(trajectory, str):
+        trajectory = {"paragraph": trajectory}
+    return {
+        "headline": trajectory.get("headline", ""),
+        "paragraph": trajectory.get("paragraph", ""),
+        "signals": validate_section(trajectory.get("signals", []), evidence_map),
     }
 
 
@@ -105,13 +192,18 @@ def validate_commercial(commercial: dict[str, Any], evidence_map: dict[str, dict
 
     pricing_rows = []
     for row in (commercial.get("pricing_comparison") or [])[:4]:
+        valid_ids = _filter_ids(row.get("evidence", []), evidence_map)
+        source = row.get("pricing_source", "Not found")
+        if source not in ("Vendor page", "Third party", "Not found"):
+            source = "Not found"
         pricing_rows.append(
             {
                 "name": row.get("name", ""),
                 "lowest_paid_plan": row.get("lowest_paid_plan", "Not found"),
                 "free_tier": row.get("free_tier", "Not found"),
                 "contact_sales_tier": row.get("contact_sales_tier", "Not found"),
-                "evidence": _filter_ids(row.get("evidence", []), evidence_map),
+                "pricing_source": source,
+                "evidence": valid_ids,
             }
         )
 
@@ -158,29 +250,69 @@ def validate_commercial(commercial: dict[str, Any], evidence_map: dict[str, dict
     }
 
 
-def validate_gaps(gaps: list[dict], evidence_map: dict[str, dict]) -> list[dict]:
-    by_no = {g.get("no"): g for g in gaps or []}
-    out = []
-    for item in GAP_ITEMS:
-        g = by_no.get(item["no"], {})
-        valid_ids = _filter_ids(g.get("evidence", []), evidence_map)
-        status = g.get("status", "Missing")
-        if status == "Found" and not valid_ids:
+def _clamp_priority(value: Any) -> int:
+    try:
+        return max(1, min(3, int(value)))
+    except (TypeError, ValueError):
+        return 2
+
+
+def validate_diligence(diligence: list[dict], evidence_map: dict[str, dict]) -> list[dict]:
+    """Validates the merged findings-and-questions list.
+
+    A Found or Partial status is a claim about the evidence, so it only survives with a
+    citation that survived; without one the row falls back to Missing and its `found`
+    sentence is replaced rather than shown uncited. The question and why are the model's
+    own judgment rather than factual claims, so they are kept either way.
+    """
+    rows = []
+    seen_questions: set[str] = set()
+    for row in diligence or []:
+        if not isinstance(row, dict):
+            continue
+        topic = (row.get("topic") or "").strip()
+        question = (row.get("question") or "").strip()
+        if not topic and not question:
+            continue
+
+        valid_ids = _filter_ids(row.get("evidence", []), evidence_map)
+        status = row.get("status")
+        if status not in DILIGENCE_STATUSES:
             status = "Missing"
-        if status not in ("Found", "Partial", "Missing"):
+        found = (row.get("found") or "").strip()
+        if not valid_ids:
             status = "Missing"
-        out.append(
+            found = NO_EVIDENCE_TEXT
+        elif not found:
+            found = NO_EVIDENCE_TEXT
+
+        key = question.lower()
+        if key and key in seen_questions:
+            continue
+        if key:
+            seen_questions.add(key)
+
+        area = row.get("area")
+        if area not in _AREA_ORDER:
+            area = FALLBACK_AREA
+
+        rows.append(
             {
-                "no": item["no"],
-                "item": item["item"],
-                "priority": item["priority"],
+                "area": area,
+                "topic": topic,
                 "status": status,
+                "found": found,
+                "question": question,
+                "why": (row.get("why") or "").strip(),
+                "priority": _clamp_priority(row.get("priority")),
                 "evidence": valid_ids,
-                "question": g.get("question", ""),
-                "why": g.get("why", ""),
             }
         )
-    return out
+
+    # Priority first so the meeting-critical questions sit at the top, then the fixed
+    # area order so repeat runs of the same company stay comparable row for row.
+    rows.sort(key=lambda r: (r["priority"], _AREA_ORDER.get(r["area"], len(_AREA_ORDER))))
+    return rows[:MAX_DILIGENCE_ROWS]
 
 
 def validate_scorecard(scorecard: list[dict], evidence_map: dict[str, dict]) -> list[dict]:
@@ -198,55 +330,17 @@ def validate_scorecard(scorecard: list[dict], evidence_map: dict[str, dict]) -> 
     return out
 
 
-def build_questions(
-    commercial: dict[str, Any], gaps: list[dict], risk_questions: list[dict]
-) -> list[dict]:
-    questions: list[dict] = []
-
-    for m in commercial.get("mismatches", []):
-        if m.get("question"):
-            questions.append(
-                {"text": m["question"], "why": m.get("why_it_matters", ""), "priority": None, "source": "mismatch"}
-            )
-
-    gap_questions = [g for g in gaps if g["status"] != "Found" and g.get("question")]
-    gap_questions.sort(key=lambda g: (g["priority"], g["no"]))
-    for g in gap_questions:
-        questions.append(
-            {"text": g["question"], "why": g.get("why", ""), "priority": g["priority"], "source": "gap"}
-        )
-
-    for rq in risk_questions or []:
-        text = rq.get("text") if isinstance(rq, dict) else rq
-        why = rq.get("why", "") if isinstance(rq, dict) else ""
-        if text:
-            questions.append({"text": text, "why": why, "priority": None, "source": "risk"})
-
-    # De-duplicate while preserving order.
-    seen_text = set()
-    deduped = []
-    for q in questions:
-        key = q["text"].strip().lower()
-        if key and key not in seen_text:
-            seen_text.add(key)
-            deduped.append(q)
-
-    return deduped[:MAX_QUESTIONS]
-
-
 def validate_output(analysis: dict[str, Any], evidence_map: dict[str, dict]) -> dict[str, Any]:
     """Runs the full validation pass and returns the briefing-ready structure."""
-    commercial = validate_commercial(analysis.get("commercial", {}), evidence_map)
-    gaps = validate_gaps(analysis.get("gaps", []), evidence_map)
-    questions = build_questions(commercial, gaps, analysis.get("risk_questions", []))
-
     return {
-        "company_summary": validate_section(analysis.get("company_summary", []), evidence_map),
+        "overview": validate_overview(analysis.get("overview", {}), evidence_map),
+        "key_facts": validate_key_facts(analysis.get("key_facts", []), evidence_map),
         "market": validate_market(analysis.get("market", {}), evidence_map),
         "competitors": validate_section(analysis.get("competitors", []), evidence_map),
+        "news_highlights": validate_news(analysis.get("news_highlights", []), evidence_map),
+        "trajectory": validate_trajectory(analysis.get("trajectory", {}), evidence_map),
         "risks": validate_risks(analysis.get("risks", []), evidence_map),
-        "commercial": commercial,
-        "gaps": gaps,
-        "questions": questions,
+        "commercial": validate_commercial(analysis.get("commercial", {}), evidence_map),
+        "diligence": validate_diligence(analysis.get("diligence", []), evidence_map),
         "scorecard": validate_scorecard(analysis.get("scorecard", []), evidence_map),
     }
