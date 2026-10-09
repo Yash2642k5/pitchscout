@@ -61,8 +61,15 @@ def validate_statement(statement: dict[str, Any], evidence_map: dict[str, dict])
 def validate_section(statements: list[dict], evidence_map: dict[str, dict]) -> list[dict]:
     out = []
     for s in statements or []:
+        # Some models return plain strings instead of statement objects — coerce them.
+        if isinstance(s, str):
+            s = {"text": s, "confidence": "Single source", "evidence": []}
         validated = validate_statement(s, evidence_map)
-        if validated is not None:
+        # Allow statements with no valid evidence IDs if they at least have text
+        # (e.g. competitor descriptions that don't cite a specific evidence item).
+        if validated is None and s.get("text"):
+            out.append({"text": s["text"], "confidence": "Single source", "evidence": []})
+        elif validated is not None:
             out.append(validated)
     return out
 

@@ -85,6 +85,29 @@ def _extract_tool_call(message: Any, tool_name: str, schema: dict[str, Any]) -> 
             except (TypeError, json.JSONDecodeError) as exc:
                 raise AnalyzerError(f"Model's {tool_name} arguments were not valid JSON.") from exc
             return _coerce_to_schema(arguments, schema)
+            
+    # Fallback for models that output markdown JSON instead of a tool call
+    content = getattr(message, "content", "")
+    if content and isinstance(content, str):
+        # strip markdown formatting if present
+        cleaned = content.strip()
+        if cleaned.startswith("```json"):
+            cleaned = cleaned[7:]
+        elif cleaned.startswith("```"):
+            cleaned = cleaned[3:]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+        cleaned = cleaned.strip()
+        try:
+            arguments = json.loads(cleaned)
+            if isinstance(arguments, dict):
+                # sometimes models wrap it in {"arguments": {...}} or {"company_summary": [...]}
+                if "arguments" in arguments and len(arguments) == 1:
+                    arguments = arguments["arguments"]
+                return _coerce_to_schema(arguments, schema)
+        except json.JSONDecodeError:
+            pass
+
     raise AnalyzerError(f"Model did not call {tool_name}.")
 
 
@@ -156,8 +179,11 @@ async def _call_tool(prompt: str, tool: dict[str, Any], max_tokens: int, failure
                 model=_model(),
                 max_tokens=max_tokens,
                 tools=[_as_groq_tool(tool)],
-                tool_choice={"type": "function", "function": {"name": tool_name}},
-                messages=[{"role": "user", "content": prompt}],
+                tool_choice="required",
+                messages=[
+                    {"role": "system", "content": "You are a specialized JSON data extractor. You must call the provided tool with the requested data. Never output conversational text."},
+                    {"role": "user", "content": prompt}
+                ],
             )
         except groq.APIError as exc:
             repaired = _repair_tool_use_failure(exc, tool_name, schema)
@@ -176,7 +202,7 @@ async def call_entities(
 ) -> dict[str, Any]:
     """LLM call 1: exactly three competitors and two listed companies."""
     prompt = entity_prompt(company, website, category, evidence_items)
-    return await _call_tool(prompt, ENTITY_TOOL, max_tokens=2048, failure_label="Entity call")
+    return await _call_tool(prompt, ENTITY_TOOL, max_tokens=1000, failure_label="Entity call")
 
 
 async def call_analysis(
@@ -184,4 +210,4 @@ async def call_analysis(
 ) -> dict[str, Any]:
     """LLM call 2: sections, Commercial Reality Check, gaps, claims, scorecard."""
     prompt = analysis_prompt(company, website, category, evidence_items)
-    return await _call_tool(prompt, ANALYSIS_TOOL, max_tokens=8192, failure_label="Analysis call")
+    return await _call_tool(prompt, ANALYSIS_TOOL, max_tokens=2500, failure_label="Analysis call")

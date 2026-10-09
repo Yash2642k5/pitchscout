@@ -30,7 +30,7 @@ def test_post_briefing_blank_field_returns_422(client):
 def test_post_briefing_success(client, monkeypatch):
     fake_briefing = {"id": "abc", "company": "Acme AI", "searches": []}
 
-    async def fake_run_pipeline(company, website, category):
+    async def fake_run_pipeline(company, website, category, gl):
         return fake_briefing
 
     monkeypatch.setattr(main, "run_pipeline", fake_run_pipeline)
@@ -43,7 +43,7 @@ def test_post_briefing_success(client, monkeypatch):
 
 
 def test_post_briefing_budget_exceeded_returns_429(client, monkeypatch):
-    async def fake_run_pipeline(company, website, category):
+    async def fake_run_pipeline(company, website, category, gl):
         raise BudgetExceeded("budget spent")
 
     monkeypatch.setattr(main, "run_pipeline", fake_run_pipeline)
@@ -55,7 +55,7 @@ def test_post_briefing_budget_exceeded_returns_429(client, monkeypatch):
 
 
 def test_post_briefing_validation_error_returns_422(client, monkeypatch):
-    async def fake_run_pipeline(company, website, category):
+    async def fake_run_pipeline(company, website, category, gl):
         raise ValidationError("bad input")
 
     monkeypatch.setattr(main, "run_pipeline", fake_run_pipeline)
@@ -136,7 +136,7 @@ def _parse_sse(text):
 
 
 def test_stream_briefing_emits_progress_then_briefing(client, monkeypatch):
-    async def fake_steps(company, website, category):
+    async def fake_steps(company, website, category, gl):
         yield {"progress": 10, "label": "Working"}
         yield {"progress": 100, "label": "Done", "briefing": {"id": "x", "company": company}}
 
@@ -152,7 +152,7 @@ def test_stream_briefing_emits_progress_then_briefing(client, monkeypatch):
 
 
 def test_stream_briefing_budget_exceeded_emits_error_event(client, monkeypatch):
-    async def fake_steps(company, website, category):
+    async def fake_steps(company, website, category, gl):
         raise BudgetExceeded("budget spent")
         yield  # pragma: no cover - makes this an async generator
 
@@ -166,7 +166,7 @@ def test_stream_briefing_budget_exceeded_emits_error_event(client, monkeypatch):
 
 
 def test_stream_briefing_validation_error_emits_error_event(client, monkeypatch):
-    async def fake_steps(company, website, category):
+    async def fake_steps(company, website, category, gl):
         raise ValidationError("bad input")
         yield  # pragma: no cover - makes this an async generator
 

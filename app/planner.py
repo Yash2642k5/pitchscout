@@ -16,16 +16,16 @@ class PlannedSearch:
     params: dict
 
 
-def plan_wave_1(company: str, website: str, category: str) -> list[PlannedSearch]:
+def plan_wave_1(company: str, website: str, category: str, gl: str = "us") -> list[PlannedSearch]:
     """Searches 1-11. Depend only on the three request inputs."""
-    common = {"hl": "en", "gl": "in"}
+    common = {"hl": "en", "gl": gl}
     return [
-        PlannedSearch(1, 1, "google", {**common, "q": f'"{company}" {category}'}),
-        PlannedSearch(2, 1, "google", {**common, "q": f'"{company}" founder OR co-founder OR CEO'}),
+        PlannedSearch(1, 1, "google", {**common, "q": f'{company} {category}'}),
+        PlannedSearch(2, 1, "google", {**common, "q": f'{company} founder OR co-founder OR CEO'}),
         PlannedSearch(3, 1, "google", {**common, "q": f"{company} competitors alternatives"}),
         PlannedSearch(4, 1, "google", {**common, "q": f"{company} pricing plans"}),
-        PlannedSearch(5, 1, "google_news", {**common, "q": f'"{company}"'}),
-        PlannedSearch(6, 1, "google_news", {**common, "q": f'"{company}" funding OR raises OR investors'}),
+        PlannedSearch(5, 1, "google_news", {**common, "q": f'{company}'}),
+        PlannedSearch(6, 1, "google_news", {**common, "q": f'{company} funding OR raises OR investors'}),
         PlannedSearch(7, 1, "google_news", {**common, "q": category}),
         PlannedSearch(8, 1, "google_jobs", {**common, "q": company}),
         PlannedSearch(9, 1, "google_trends", {"q": f"{company},{category}"}),
@@ -34,13 +34,13 @@ def plan_wave_1(company: str, website: str, category: str) -> list[PlannedSearch
     ]
 
 
-def plan_wave_2(competitors: list[dict], tickers: list[str]) -> list[PlannedSearch]:
+def plan_wave_2(competitors: list[dict], tickers: list[str], gl: str = "us") -> list[PlannedSearch]:
     """Searches 12-16. Depend on the entity call's output.
 
     competitors: list of up to 3 dicts with a "name" key (order preserved).
     tickers: list of up to 2 ticker strings, e.g. "AAPL:NASDAQ".
     """
-    common = {"hl": "en", "gl": "in"}
+    common = {"hl": "en", "gl": gl}
     searches: list[PlannedSearch] = []
     for i in range(3):
         name = competitors[i]["name"] if i < len(competitors) else None
