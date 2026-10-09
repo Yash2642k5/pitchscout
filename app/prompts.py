@@ -375,12 +375,9 @@ def analysis_prompt(company: str, website: str, category: str, evidence_items: l
         f"For each item return its `no`, a status of Found/Partial/Missing, the evidence IDs behind that "
         f"status, and (only if Partial or Missing) one question to ask the founders plus one short clause "
         f"on why it matters:\n{gap_block}\n\n"
-        "Risk questions: propose exactly 8 to 10 ranked questions about legal, regulatory, reputational, "
+        "Risk questions: propose exactly 5 ranked questions about legal, regulatory, reputational, "
         "or execution risk, each with a one-clause 'why', grounded in the risks section where evidence "
-        "supports it and falling back to sound general questions for this category where it doesn't. The "
-        "final briefing needs 10 to 15 questions in total (mismatch questions, then gap questions, then "
-        "these), and there may be few or no mismatch or gap questions — always supply the full 8 to 10 "
-        "here so the total still reaches at least 10.\n\n"
+        "supports it and falling back to sound general questions for this category where it doesn't.\n\n"
         "Scorecard: score Team, Traction, Market, Defensibility, and Risk from 1 to 5 (on Risk, a higher "
         "score means lower risk). Always give a number — if evidence is thin, give your best grounded "
         "estimate and say so plainly in the rationale (e.g. 'limited evidence, estimated from category "
@@ -390,7 +387,7 @@ def analysis_prompt(company: str, website: str, category: str, evidence_items: l
     )
 
 
-_MAX_SNIPPET_CHARS = 220
+_MAX_SNIPPET_CHARS = 150
 
 
 def _truncate(text: str, limit: int) -> str:

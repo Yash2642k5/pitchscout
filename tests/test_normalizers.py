@@ -50,11 +50,11 @@ def test_every_fixture_converts_to_schema_valid_evidence(fixtures_dir, search_no
         assert isinstance(item["stale"], bool)
 
 
-def test_normalize_caps_at_eight_results():
+def test_normalize_caps_at_max_results():
     raw = {
         "organic_results": [
             {"title": f"Acme AI result {i}", "link": f"https://acme.ai/{i}", "snippet": "Acme AI info"}
-            for i in range(20)
+            for i in range(25)
         ]
     }
     counter = IdCounter()

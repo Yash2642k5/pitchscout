@@ -95,7 +95,7 @@ def _hiring_signal_statement(job_evidence: list[dict[str, Any]], evidence_map: d
     return {"text": text, "confidence": confidence, "evidence": evidence_ids}
 
 
-async def run_pipeline_steps(company: str, website: str, category: str) -> AsyncIterator[dict[str, Any]]:
+async def run_pipeline_steps(company: str, website: str, category: str, gl: str = "us") -> AsyncIterator[dict[str, Any]]:
     """Runs all ten steps, yielding progress events along the way.
 
     Every yielded event has `progress` (0-100) and `label`. The final event also carries
@@ -110,7 +110,7 @@ async def run_pipeline_steps(company: str, website: str, category: str) -> Async
 
     # Steps 2-3: wave 1
     yield {"progress": 5, "label": "Running 11 searches"}
-    wave1_searches = planner.plan_wave_1(company, website, category)
+    wave1_searches = planner.plan_wave_1(company, website, category, gl)
     wave1_evidence, wave1_log, _ = await _run_wave(wave1_searches, id_counter, company, website, category)
     yield {"progress": 35, "label": "Reading the evidence"}
 
@@ -123,7 +123,7 @@ async def run_pipeline_steps(company: str, website: str, category: str) -> Async
 
     # Steps 5-6: wave 2
     yield {"progress": 48, "label": "Running 5 more searches"}
-    wave2_searches = planner.plan_wave_2(competitors, tickers)
+    wave2_searches = planner.plan_wave_2(competitors, tickers, gl)
     wave2_evidence, wave2_log, _ = await _run_wave(wave2_searches, id_counter, company, website, category)
 
     all_evidence = wave1_evidence + wave2_evidence
@@ -170,10 +170,10 @@ async def run_pipeline_steps(company: str, website: str, category: str) -> Async
     yield {"progress": 100, "label": "Done", "briefing": briefing}
 
 
-async def run_pipeline(company: str, website: str, category: str) -> dict[str, Any]:
+async def run_pipeline(company: str, website: str, category: str, gl: str = "us") -> dict[str, Any]:
     """Runs all ten steps and returns the saved briefing, discarding progress events."""
     briefing: dict[str, Any] | None = None
-    async for event in run_pipeline_steps(company, website, category):
+    async for event in run_pipeline_steps(company, website, category, gl):
         if "briefing" in event:
             briefing = event["briefing"]
     return briefing

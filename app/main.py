@@ -26,6 +26,7 @@ class BriefingRequest(BaseModel):
     company: str = Field(min_length=1)
     website: str = Field(min_length=1)
     category: str = Field(min_length=1)
+    gl: str = Field(default="us", pattern=r"^[a-z]{2}$")
 
 
 def _replay_mode() -> bool:
@@ -44,7 +45,7 @@ async def post_briefing(request: BriefingRequest):
         return briefing
 
     try:
-        briefing = await run_pipeline(request.company, request.website, request.category)
+        briefing = await run_pipeline(request.company, request.website, request.category, request.gl)
     except ValidationError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except BudgetExceeded as exc:
@@ -55,7 +56,7 @@ async def post_briefing(request: BriefingRequest):
 
 
 @app.get("/api/briefing/stream")
-async def stream_briefing(company: str, website: str, category: str):
+async def stream_briefing(company: str, website: str, category: str, gl: str = "us"):
     """Server-sent events for a live progress bar. Same pipeline as POST /api/briefing;
     each event is `{"progress": 0-100, "label": str}`, and the last one also carries
     `briefing`. A failure arrives as `{"error": true, "detail": str, "status": int}`.
@@ -73,7 +74,7 @@ async def stream_briefing(company: str, website: str, category: str):
             return
 
         try:
-            async for event in run_pipeline_steps(company, website, category):
+            async for event in run_pipeline_steps(company, website, category, gl):
                 yield _sse(event)
         except ValidationError as exc:
             yield _sse({"error": True, "status": 422, "detail": str(exc)})

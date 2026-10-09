@@ -104,8 +104,15 @@ def passes_name_filter(
     if search_no not in (1, 2, 5, 6):
         return True
     haystack = f"{title or ''} {snippet or ''}".lower()
-    if company.lower() in haystack:
+    company_lower = company.lower()
+    if company_lower in haystack:
         return True
+    
+    # Fuzzy match: check if the first word of the company name is in the text
+    words = company_lower.split()
+    if words and len(words[0]) > 2 and words[0] in haystack:
+        return True
+
     website_domain = registrable_domain(website)
     result_domain = registrable_domain(url)
     return bool(website_domain) and website_domain == result_domain

@@ -47,11 +47,11 @@ status of `error` or `empty`; the pipeline never raises on empty data.
 ## Setup
 
 ```bash
-python -m venv .venv
-.venv/Scripts/activate        # Windows
+uv venv
+.venv\Scripts\activate        # Windows
 # source .venv/bin/activate   # macOS/Linux
 
-pip install -r requirements.txt
+uv pip install -r requirements.txt
 cp .env.example .env           # then fill in your keys
 ```
 
