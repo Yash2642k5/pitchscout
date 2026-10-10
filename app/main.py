@@ -1,6 +1,7 @@
 """FastAPI app and the Marser endpoints."""
 
 import json
+import logging
 import os
 from pathlib import Path
 
@@ -16,6 +17,8 @@ from . import storage  # noqa: E402  (after load_dotenv so env vars are set firs
 from .analyzer import AnalyzerError  # noqa: E402
 from .pipeline import ValidationError, run_pipeline, run_pipeline_steps  # noqa: E402
 from .serp_client import BudgetExceeded  # noqa: E402
+
+logger = logging.getLogger("marser")
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -82,8 +85,15 @@ async def stream_briefing(company: str, website: str, category: str, gl: str = "
             yield _sse({"error": True, "status": 429, "detail": str(exc)})
         except AnalyzerError as exc:
             yield _sse({"error": True, "status": 502, "detail": str(exc)})
+        except Exception as exc:  # anything uncaught would otherwise just cut the stream off
+            logger.exception("Briefing stream failed for %r", company)
+            yield _sse({"error": True, "status": 500, "detail": f"{type(exc).__name__}: {exc}"})
 
-    return StreamingResponse(events(), media_type="text/event-stream")
+    return StreamingResponse(
+        events(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 def _sse(payload: dict) -> str:
