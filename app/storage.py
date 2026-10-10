@@ -12,9 +12,34 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+import tempfile
+
 BASE_DIR = Path(__file__).resolve().parent.parent
-DATA_DIR = BASE_DIR / "data"
-SAVED_BRIEFINGS_DIR = BASE_DIR / "saved_briefings"
+
+
+def _writable_dir(preferred: Path, name: str) -> Path:
+    """The preferred directory if it can be written to, else a temp-dir fallback.
+
+    Hosts like Vercel or a container with a read-only image refuse writes next to
+    the code; /tmp is writable (though not persistent across restarts).
+    """
+    try:
+        preferred.mkdir(parents=True, exist_ok=True)
+        probe = preferred / ".write_test"
+        probe.write_text("ok")
+        probe.unlink()
+        return preferred
+    except OSError:
+        fallback = Path(tempfile.gettempdir()) / "marser" / name
+        fallback.mkdir(parents=True, exist_ok=True)
+        return fallback
+
+
+# Set DATA_DIR / SAVED_BRIEFINGS_DIR in the environment to point at a persistent volume.
+DATA_DIR = _writable_dir(Path(os.environ.get("DATA_DIR") or BASE_DIR / "data"), "data")
+SAVED_BRIEFINGS_DIR = _writable_dir(
+    Path(os.environ.get("SAVED_BRIEFINGS_DIR") or BASE_DIR / "saved_briefings"), "saved_briefings"
+)
 
 DB_PATH = DATA_DIR / "marser.db"
 
