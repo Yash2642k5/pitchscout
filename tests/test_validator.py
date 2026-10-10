@@ -83,46 +83,64 @@ def test_validate_risks_defaults_invalid_category_to_other():
     assert result[0]["category"] == "other"
 
 
-def test_validate_commercial_drops_empty_listed_comparables():
-    commercial = {
-        "pricing_comparison": [],
-        "listed_comparables": [{"name": "X", "ticker": "X:NYSE", "price": "1", "market_cap": "1",
-                                  "price_movement": "1", "evidence": []}],
-        "mismatches": [],
-    }
-    result = validator.validate_commercial(commercial, EVIDENCE_MAP)
-    assert result["listed_comparables"] == []
-
-
-def test_validate_commercial_drops_listed_comparable_not_from_google_finance():
-    # e03 is a plain "google" evidence item, not google_finance, so this must be dropped
-    # even though it cites valid evidence — this is the "wrong competitor data in listed
-    # comparables" bug class.
-    commercial = {
-        "pricing_comparison": [],
-        "listed_comparables": [{"name": "LexBrief", "ticker": "Not reported", "price": "$49/month",
-                                  "market_cap": "Not reported", "price_movement": "Not reported",
-                                  "evidence": ["e03"]}],
-        "mismatches": [],
-    }
-    result = validator.validate_commercial(commercial, EVIDENCE_MAP)
-    assert result["listed_comparables"] == []
-
-
-def test_validate_commercial_keeps_listed_comparables_with_evidence():
-    commercial = {
-        "pricing_comparison": [],
-        "listed_comparables": [{"name": "Thomson Reuters", "ticker": "TRI:NYSE", "price": "1", "market_cap": "1",
-                                  "price_movement": "1", "evidence": ["e05"]}],
-        "mismatches": [],
-    }
-    result = validator.validate_commercial(commercial, EVIDENCE_MAP)
-    assert len(result["listed_comparables"]) == 1
-
-
 def test_validate_commercial_has_no_app_or_shopping_keys():
     result = validator.validate_commercial({}, EVIDENCE_MAP)
-    assert set(result.keys()) == {"pricing_comparison", "listed_comparables", "mismatches"}
+    assert set(result.keys()) == {"pricing_comparison", "mismatches"}
+
+
+def _share(**kw):
+    row = {"holder": "Acme AI", "is_subject": True, "share_pct": 12.4,
+           "scope": "AI legal research", "period": "2025", "evidence": ["e01"]}
+    row.update(kw)
+    return row
+
+
+def _value(**kw):
+    row = {"period": "2024", "value_usd_m": 450.0, "value_text": "$450 million",
+           "basis": "post-money valuation", "evidence": ["e01"]}
+    row.update(kw)
+    return row
+
+
+def test_validate_market_position_keeps_a_cited_share_figure():
+    result = validator.validate_market_position({"share_figures": [_share()], "brand_values": []}, EVIDENCE_MAP)
+    assert result["share_figures"][0]["share_pct"] == 12.4
+    assert result["share_figures"][0]["is_subject"] is True
+
+
+def test_validate_market_position_drops_an_uncited_share_figure():
+    result = validator.validate_market_position(
+        {"share_figures": [_share(evidence=["nope"])], "brand_values": []}, EVIDENCE_MAP
+    )
+    assert result["share_figures"] == []
+
+
+def test_validate_market_position_drops_a_share_outside_0_to_100():
+    rows = [_share(share_pct=150), _share(share_pct=0), _share(share_pct=-4), _share(share_pct="n/a")]
+    result = validator.validate_market_position({"share_figures": rows, "brand_values": []}, EVIDENCE_MAP)
+    assert result["share_figures"] == []
+
+
+def test_validate_market_position_orders_shares_largest_first():
+    rows = [_share(holder="Small", share_pct=5), _share(holder="Big", share_pct=40)]
+    result = validator.validate_market_position({"share_figures": rows, "brand_values": []}, EVIDENCE_MAP)
+    assert [r["holder"] for r in result["share_figures"]] == ["Big", "Small"]
+
+
+def test_validate_market_position_orders_brand_values_by_year():
+    rows = [_value(period="2026", value_usd_m=1200), _value(period="2023", value_usd_m=90)]
+    result = validator.validate_market_position({"share_figures": [], "brand_values": rows}, EVIDENCE_MAP)
+    assert [r["year"] for r in result["brand_values"]] == [2023, 2026]
+
+
+def test_validate_market_position_drops_a_non_positive_or_unparsable_value():
+    rows = [_value(value_usd_m=0), _value(value_usd_m=-3), _value(value_usd_m="lots")]
+    result = validator.validate_market_position({"share_figures": [], "brand_values": rows}, EVIDENCE_MAP)
+    assert result["brand_values"] == []
+
+
+def test_validate_market_position_tolerates_a_missing_block():
+    assert validator.validate_market_position({}, EVIDENCE_MAP) == {"share_figures": [], "brand_values": []}
 
 
 def _row(**kw):
@@ -263,7 +281,6 @@ def test_validate_commercial_defaults_unknown_pricing_source():
             {"name": "Acme", "lowest_paid_plan": "$99/mo", "free_tier": "Yes",
              "contact_sales_tier": "Yes", "pricing_source": "made up", "evidence": ["e03"]}
         ],
-        "listed_comparables": [],
         "mismatches": [],
     }
     result = validator.validate_commercial(commercial, EVIDENCE_MAP)
@@ -276,7 +293,6 @@ def test_validate_commercial_keeps_third_party_pricing_source():
             {"name": "Acme", "lowest_paid_plan": "$60,000/year", "free_tier": "No",
              "contact_sales_tier": "Yes", "pricing_source": "Third party", "evidence": ["e03"]}
         ],
-        "listed_comparables": [],
         "mismatches": [],
     }
     result = validator.validate_commercial(commercial, EVIDENCE_MAP)
@@ -314,9 +330,9 @@ def test_validate_output_end_to_end_shape():
         "news_highlights": [],
         "trajectory": {"headline": "Upmarket", "paragraph": "Forward read.", "signals": []},
         "risks": [],
+        "market_position": {"share_figures": [_share()], "brand_values": [_value()]},
         "commercial": {
             "pricing_comparison": [],
-            "listed_comparables": [],
             "mismatches": [],
         },
         "diligence": [_row()],
@@ -324,8 +340,8 @@ def test_validate_output_end_to_end_shape():
     }
     result = validator.validate_output(analysis, EVIDENCE_MAP)
     assert set(result.keys()) == {
-        "overview", "key_facts", "market", "competitors", "news_highlights",
-        "trajectory", "risks", "commercial", "diligence", "scorecard",
+        "overview", "key_facts", "market", "market_position", "competitors",
+        "news_highlights", "trajectory", "risks", "commercial", "diligence", "scorecard",
     }
     assert len(result["scorecard"]) == 5
     assert all(s["score"] is not None for s in result["scorecard"])

@@ -98,10 +98,17 @@ def test_get_usage(client):
     assert set(body.keys()) == {"live_searches", "budget", "remainder", "replay_mode"}
 
 
-def test_index_serves_html(client):
+def test_home_serves_landing_page(client):
     res = client.get("/")
     assert res.status_code == 200
-    assert "PitchScout" in res.text
+    assert "Marser" in res.text
+    assert 'href="/app"' in res.text
+
+
+def test_index_serves_html(client):
+    res = client.get("/app")
+    assert res.status_code == 200
+    assert "Marser" in res.text
 
 
 def test_replay_mode_returns_matching_briefing(monkeypatch):

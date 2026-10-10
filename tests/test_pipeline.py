@@ -11,7 +11,7 @@ FIXTURE_BY_SEARCH_NO = {
     7: "search_07_google_news.json", 8: "search_08_google_jobs.json", 9: "search_09_google_trends.json",
     10: "search_10_google_play.json", 11: "search_11_google_shopping.json", 12: "search_12_google.json",
     13: "search_13_google.json", 14: "search_14_google.json", 15: "search_15_google_finance.json",
-    16: "search_16_google_finance.json",
+    16: "search_16_google.json", 17: "search_17_google.json", 18: "search_18_google_news.json",
 }
 
 STUB_ANALYSIS = {
@@ -26,9 +26,18 @@ STUB_ANALYSIS = {
     "news_highlights": [],
     "trajectory": {"headline": "Moving upmarket", "paragraph": "Forward read.", "signals": []},
     "risks": [],
+    "market_position": {
+        "share_figures": [
+            {"holder": "Acme AI", "is_subject": True, "share_pct": 12.4,
+             "scope": "AI legal research market", "period": "2025", "evidence": ["e01"]},
+        ],
+        "brand_values": [
+            {"period": "2024", "value_usd_m": 450.0, "value_text": "$450 million",
+             "basis": "post-money valuation", "evidence": ["e01"]},
+        ],
+    },
     "commercial": {
         "pricing_comparison": [],
-        "listed_comparables": [],
         "mismatches": [],
     },
     "diligence": [
@@ -73,6 +82,7 @@ def mock_analyzer(monkeypatch):
                 {"name": "CaseMind", "domain": "casemind.io"},
                 {"name": "StatuteIQ", "domain": "statuteiq.com"},
             ],
+            "subject_ticker": "",
             "listed_companies": [
                 {"name": "Thomson Reuters", "ticker": "TRI:NYSE"},
                 {"name": "RELX", "ticker": "RELX:LON"},
@@ -89,10 +99,10 @@ def mock_analyzer(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_pipeline_produces_16_search_log_entries(mock_search, mock_analyzer):
+async def test_pipeline_produces_18_search_log_entries(mock_search, mock_analyzer):
     briefing = await pipeline.run_pipeline("Acme AI", "https://acme.ai", "AI legal research assistant")
-    assert len(briefing["searches"]) == 16
-    assert [s["number"] for s in briefing["searches"]] == list(range(1, 17))
+    assert len(briefing["searches"]) == 18
+    assert [s["number"] for s in briefing["searches"]] == list(range(1, 19))
 
 
 @pytest.mark.asyncio
@@ -100,7 +110,7 @@ async def test_pipeline_collects_evidence_from_both_waves(mock_search, mock_anal
     briefing = await pipeline.run_pipeline("Acme AI", "https://acme.ai", "AI legal research assistant")
     search_nos = {e["search_no"] for e in briefing["evidence"].values()}
     assert search_nos & {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}  # wave 1
-    assert search_nos & {12, 13, 14, 15, 16}  # wave 2
+    assert search_nos & {12, 13, 14, 15, 16, 17, 18}  # wave 2
 
 
 @pytest.mark.asyncio

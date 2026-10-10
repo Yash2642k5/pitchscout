@@ -11,16 +11,36 @@ fabricate a result.
 import asyncio
 import json
 import os
-from typing import Any
+import re
+import time
+from collections import deque
+from typing import Any, Callable
 
 import groq
 
-from .prompts import ANALYSIS_TOOL, ENTITY_TOOL, analysis_prompt, entity_prompt
+from .prompts import (
+    ANALYSIS_TOOL,
+    ENTITY_TOOL,
+    analysis_prompt,
+    entity_prompt,
+    estimate_tokens,
+)
 
 MAX_ATTEMPTS = 4
 RETRY_DELAY_SECONDS = 2.0
 # Long enough to clear a rolling per-minute token window when Groq gives no hint.
 RATE_LIMIT_DELAY_SECONDS = 25.0
+
+# Groq's on-demand tier allows 8,000 tokens per rolling minute on gpt-oss-120b, counting
+# both the prompt and the reply. A briefing spends more than that across its two calls,
+# so the calls are paced against the window below rather than left to fail and retry.
+# Set LLM_TOKENS_PER_MINUTE to the TPM on your Groq plan (console.groq.com/settings/limits).
+DEFAULT_TOKENS_PER_MINUTE = 8000
+WINDOW_SECONDS = 60.0
+# What a call is assumed to spend on its reply before the real figure comes back. Only
+# used to decide whether to wait; the actual usage replaces it afterwards.
+ASSUMED_REPLY_TOKENS = 1200
+MAX_PACING_WAIT_SECONDS = 62.0
 
 
 class AnalyzerError(Exception):
@@ -34,6 +54,57 @@ def _client() -> groq.AsyncGroq:
 
 def _model() -> str:
     return os.environ.get("LLM_MODEL", "openai/gpt-oss-120b")
+
+
+def _tokens_per_minute() -> int:
+    raw = os.environ.get("LLM_TOKENS_PER_MINUTE", "").strip()
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_TOKENS_PER_MINUTE
+    return value if value > 0 else DEFAULT_TOKENS_PER_MINUTE
+
+
+class _TokenWindow:
+    """A rolling record of tokens spent, mirroring Groq's own per-minute window.
+
+    The two calls of one briefing run seconds apart and together cost more than the
+    on-demand tier allows per minute, so the second would reliably come back 429 and then
+    sit through a blind backoff. Waiting here instead means waiting exactly as long as the
+    window needs, and only when the next call would not fit.
+    """
+
+    def __init__(self) -> None:
+        self._spent: deque[tuple[float, int]] = deque()
+
+    def _prune(self, now: float) -> None:
+        while self._spent and now - self._spent[0][0] >= WINDOW_SECONDS:
+            self._spent.popleft()
+
+    def record(self, tokens: int) -> None:
+        now = time.monotonic()
+        self._prune(now)
+        self._spent.append((now, max(tokens, 0)))
+
+    def wait_seconds(self, needed: int, limit: int) -> float:
+        """How long to wait before `needed` more tokens fit inside the window."""
+        now = time.monotonic()
+        self._prune(now)
+        used = sum(tokens for _, tokens in self._spent)
+        # A single call larger than the whole window can never fit; sending it is the
+        # caller's problem to solve by shrinking the prompt, not something to wait out.
+        if needed >= limit:
+            return 0.0
+        wait = 0.0
+        for stamp, tokens in self._spent:
+            if used + needed <= limit:
+                break
+            used -= tokens
+            wait = WINDOW_SECONDS - (now - stamp) + 0.5
+        return min(max(wait, 0.0), MAX_PACING_WAIT_SECONDS)
+
+
+_window = _TokenWindow()
 
 
 def _as_groq_tool(tool: dict[str, Any]) -> dict[str, Any]:
@@ -152,6 +223,35 @@ def _is_rate_limited(exc: groq.APIError) -> bool:
     return isinstance(error, dict) and error.get("code") == "rate_limit_exceeded"
 
 
+_LIMIT_RE = re.compile(r"Limit\s+(\d+)", re.IGNORECASE)
+
+
+def _error_message(exc: groq.APIError) -> str:
+    body = getattr(exc, "body", None)
+    error = body.get("error") if isinstance(body, dict) else None
+    if isinstance(error, dict):
+        return str(error.get("message") or "")
+    return str(getattr(exc, "message", "") or "")
+
+
+def _is_request_too_large(exc: groq.APIError) -> bool:
+    """True for Groq's 413: this one request is bigger than the whole per-minute budget.
+
+    Unlike a 429 there is nothing to wait for - the same prompt will be too large in the
+    next window too. The only fix is to send less, so the caller rebuilds the prompt
+    against the limit Groq just reported.
+    """
+    if getattr(exc, "status_code", None) == 413:
+        return True
+    return "request too large" in _error_message(exc).lower()
+
+
+def _reported_token_limit(exc: groq.APIError) -> int | None:
+    """Reads the TPM figure out of Groq's message: "... (TPM): Limit 8000, Requested 8208"."""
+    match = _LIMIT_RE.search(_error_message(exc))
+    return int(match.group(1)) if match else None
+
+
 def _retry_after_seconds(exc: groq.APIError) -> float | None:
     """Reads Groq's own wait hint, from the retry-after header or the error message."""
     response = getattr(exc, "response", None)
@@ -183,16 +283,23 @@ def _retry_delay_seconds(exc: groq.APIError, attempt: int) -> float:
 
 
 async def _call_tool(
-    prompt: str,
+    prompt: "str | Callable[[int], str]",
     tool: dict[str, Any],
     max_tokens: int,
     failure_label: str,
     reasoning_effort: str = "low",
+    token_budget: int | None = None,
 ) -> dict[str, Any]:
     """Calls `tool`, retrying a bounded number of times on any Groq API error.
 
+    `prompt` is either finished text or a builder that takes a token budget and returns a
+    prompt fitted to it. The builder form lets a 413 ("this request is larger than your
+    whole per-minute allowance") be answered the only way it can be - by rebuilding the
+    prompt smaller, against the limit Groq itself reported - instead of resending the
+    same oversized request until the attempts run out.
+
     Empirically, this model sometimes refuses a forced tool call with a prose answer
-    instead (a sampling-dependent quirk, not a deterministic failure — the same prompt
+    instead (a sampling-dependent quirk, not a deterministic failure - the same prompt
     typically succeeds on a later attempt), and Groq's on-demand tier occasionally
     returns transient capacity or per-minute rate-limit errors. Both are worth one or two
     retries before giving up; a real user clicking Generate shouldn't eat a 502 over
@@ -200,8 +307,11 @@ async def _call_tool(
     """
     tool_name = tool["name"]
     schema = tool["input_schema"]
+    budget = token_budget
     last_exc: groq.APIError | None = None
     for attempt in range(MAX_ATTEMPTS):
+        prompt_text = prompt if isinstance(prompt, str) else prompt(budget or 0)
+        await _wait_for_token_window(prompt_text)
         try:
             completion = await _client().chat.completions.create(
                 model=_model(),
@@ -218,7 +328,7 @@ async def _call_tool(
                 extra_body={"reasoning_effort": reasoning_effort} if "gpt-oss" in _model() else None,
                 messages=[
                     {"role": "system", "content": "You are a specialized JSON data extractor. You must call the provided tool with the requested data. Never output conversational text."},
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt_text},
                 ],
             )
         except groq.APIError as exc:
@@ -226,19 +336,59 @@ async def _call_tool(
             if repaired is not None:
                 return repaired
             last_exc = exc
+            if _is_request_too_large(exc) and not isinstance(prompt, str):
+                # Waiting changes nothing here; only a smaller prompt does.
+                budget = _shrunk_budget(exc, prompt_text, budget)
+                continue
             if attempt < MAX_ATTEMPTS - 1:
                 await asyncio.sleep(_retry_delay_seconds(exc, attempt))
             continue
+        _record_usage(completion, prompt_text)
         return _extract_tool_call(completion.choices[0].message, tool_name, schema)
     raise AnalyzerError(f"{failure_label} failed after {MAX_ATTEMPTS} attempts: {last_exc}") from last_exc
+
+
+def _shrunk_budget(exc: groq.APIError, prompt_text: str, budget: int | None) -> int:
+    """The token budget to rebuild an over-large prompt against.
+
+    Groq states the limit it enforced, so aim under that rather than guessing; fall back
+    to cutting what was actually sent when it says nothing useful.
+    """
+    sent = estimate_tokens(prompt_text)
+    limit = _reported_token_limit(exc)
+    target = int(limit * 0.75) if limit else int(sent * 0.7)
+    ceiling = (budget if budget else sent) - 400
+    return max(min(target, ceiling), 1200)
+
+
+async def _wait_for_token_window(prompt_text: str) -> None:
+    """Holds a call back until it fits inside the rolling per-minute token allowance."""
+    needed = estimate_tokens(prompt_text) + ASSUMED_REPLY_TOKENS
+    wait = _window.wait_seconds(needed, _tokens_per_minute())
+    if wait > 0:
+        await asyncio.sleep(wait)
+    _window.record(needed)
+
+
+def _record_usage(completion: Any, prompt_text: str) -> None:
+    """Replaces the pre-call estimate with what the call actually cost."""
+    usage = getattr(completion, "usage", None)
+    total = getattr(usage, "total_tokens", None) if usage is not None else None
+    estimated = estimate_tokens(prompt_text) + ASSUMED_REPLY_TOKENS
+    if isinstance(total, int) and total > estimated:
+        _window.record(total - estimated)
 
 
 async def call_entities(
     company: str, website: str, category: str, evidence_items: list[dict]
 ) -> dict[str, Any]:
     """LLM call 1: exactly three competitors and two listed companies."""
-    prompt = entity_prompt(company, website, category, evidence_items)
-    return await _call_tool(prompt, ENTITY_TOOL, max_tokens=4000, failure_label="Entity call")
+    def build(budget: int) -> str:
+        return entity_prompt(
+            company, website, category, evidence_items, token_budget=budget or None
+        )
+
+    return await _call_tool(build, ENTITY_TOOL, max_tokens=4000, failure_label="Entity call")
 
 
 async def call_analysis(
@@ -249,9 +399,18 @@ async def call_analysis(
     role_mix_note: str | None = None,
 ) -> dict[str, Any]:
     """LLM call 2: overview, market, news, trajectory, commercial, diligence, scorecard."""
-    prompt = analysis_prompt(company, website, category, evidence_items, role_mix_note)
+    def build(budget: int) -> str:
+        return analysis_prompt(
+            company,
+            website,
+            category,
+            evidence_items,
+            role_mix_note,
+            token_budget=budget or None,
+        )
+
     return await _call_tool(
-        prompt,
+        build,
         ANALYSIS_TOOL,
         max_tokens=16000,
         failure_label="Analysis call",

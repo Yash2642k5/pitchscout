@@ -2,7 +2,7 @@
 
 Two kinds of persistence live here:
   - the SerpApi response cache and the live-search usage counter, in
-    data/pitchscout.db (sqlite3 standard library only)
+    data/marser.db (sqlite3 standard library only)
   - saved briefings, one JSON file per briefing, in saved_briefings/
 """
 
@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 SAVED_BRIEFINGS_DIR = BASE_DIR / "saved_briefings"
 
-DB_PATH = DATA_DIR / "pitchscout.db"
+DB_PATH = DATA_DIR / "marser.db"
 
 
 def _connect() -> sqlite3.Connection:

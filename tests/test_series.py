@@ -123,19 +123,53 @@ class _Resp:
 
 
 class TestBuildSeries:
-    def test_collects_trends_from_search_9_and_prices_from_15_and_16(self):
+    def test_collects_trends_from_search_9_and_the_stock_from_15(self):
         out = build_series(
-            {9: _Resp(_timeline((10,), (20,))), 15: _Resp(_finance()), 16: _Resp(_finance())},
+            {9: _Resp(_timeline((10,), (20,))), 15: _Resp(_finance())},
             "Co",
             "cat",
         )
         assert out["trends"]["series"][0]["points"] == [10, 20]
-        assert len(out["prices"]) == 2
+        assert out["stock"]["points"]
+
+    def test_the_stock_carries_whose_listing_it_is(self):
+        out = build_series(
+            {15: _Resp(_finance())},
+            "Co",
+            "cat",
+            "1Y",
+            {"ticker": "T:NYSE", "is_subject": False, "stands_in_for": "Co"},
+        )
+        assert out["stock"]["is_subject"] is False
+        assert out["stock"]["stands_in_for"] == "Co"
+
+    def test_a_subject_ticker_that_comes_back_as_itself_is_the_subject(self):
+        raw = _finance()
+        raw["summary"]["stock"] = "ACME"
+        out = build_series(
+            {15: _Resp(raw)}, "Acme", "cat", "1Y",
+            {"ticker": "ACME:NASDAQ", "is_subject": True, "stands_in_for": ""},
+        )
+        assert out["stock"]["is_subject"] is True
+        assert out["stock"]["unverified"] is False
+
+    def test_a_subject_ticker_that_resolves_to_another_company_is_not_the_subject(self):
+        # The ticker comes from a model. A wrong symbol returns a real graph for
+        # the wrong company, so the claim is checked against what came back.
+        raw = _finance()
+        raw["summary"]["stock"] = "TRI:NYSE"
+        out = build_series(
+            {15: _Resp(raw)}, "Acme", "cat", "1Y",
+            {"ticker": "ACME:NASDAQ", "is_subject": True, "stands_in_for": ""},
+        )
+        assert out["stock"]["is_subject"] is False
+        assert out["stock"]["unverified"] is True
+        assert out["stock"]["stands_in_for"] == "Acme"
 
     def test_a_failed_search_simply_drops_out(self):
-        out = build_series({9: _Resp({}), 15: _Resp({}), 16: _Resp(None)}, "Co", "cat")
+        out = build_series({9: _Resp({}), 15: _Resp({})}, "Co", "cat")
         assert out["trends"] is None
-        assert out["prices"] == []
+        assert out["stock"] is None
 
     def test_missing_searches_are_not_an_error(self):
-        assert build_series({}, "Co", "cat") == {"trends": None, "prices": []}
+        assert build_series({}, "Co", "cat") == {"trends": None, "stock": None}

@@ -21,7 +21,7 @@ def isolated_storage(tmp_path, monkeypatch):
     data_dir = tmp_path / "data"
     saved_dir = tmp_path / "saved_briefings"
     monkeypatch.setattr(storage, "DATA_DIR", data_dir)
-    monkeypatch.setattr(storage, "DB_PATH", data_dir / "pitchscout.db")
+    monkeypatch.setattr(storage, "DB_PATH", data_dir / "marser.db")
     monkeypatch.setattr(storage, "SAVED_BRIEFINGS_DIR", saved_dir)
     monkeypatch.setenv("SEARCH_BUDGET", "150")
     yield

@@ -1,6 +1,11 @@
 {
-  "search_metadata": {"status": "Success"},
-  "search_parameters": {"engine": "google_finance", "q": "TRI:NYSE"},
+  "search_metadata": {
+    "status": "Success"
+  },
+  "search_parameters": {
+    "engine": "google_finance",
+    "q": "TRI:NYSE"
+  },
   "summary": {
     "title": "Thomson Reuters Corp",
     "stock": "TRI:NYSE",
@@ -8,6 +13,329 @@
     "currency": "USD",
     "price_change": 1.15,
     "price_change_percent": "0.65%",
-    "market": {"market_cap": "73.2B USD"}
-  }
+    "market": {
+      "market_cap": "73.2B USD"
+    },
+    "exchange": "NYSE",
+    "extracted_price": 178.42,
+    "price_movement": {
+      "percentage": 0.65,
+      "value": 1.15,
+      "movement": "Up"
+    }
+  },
+  "graph": [
+    {
+      "price": 151.3,
+      "currency": "USD",
+      "date": "Feb 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1200000
+    },
+    {
+      "price": 153.58,
+      "currency": "USD",
+      "date": "Feb 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1209137
+    },
+    {
+      "price": 155.52,
+      "currency": "USD",
+      "date": "Feb 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1218274
+    },
+    {
+      "price": 156.87,
+      "currency": "USD",
+      "date": "Feb 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1227411
+    },
+    {
+      "price": 157.55,
+      "currency": "USD",
+      "date": "Feb 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1236548
+    },
+    {
+      "price": 157.59,
+      "currency": "USD",
+      "date": "Mar 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1245685
+    },
+    {
+      "price": 157.21,
+      "currency": "USD",
+      "date": "Mar 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1254822
+    },
+    {
+      "price": 156.66,
+      "currency": "USD",
+      "date": "Mar 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1263959
+    },
+    {
+      "price": 156.16,
+      "currency": "USD",
+      "date": "Mar 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1273096
+    },
+    {
+      "price": 155.89,
+      "currency": "USD",
+      "date": "Apr 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1282233
+    },
+    {
+      "price": 155.86,
+      "currency": "USD",
+      "date": "Apr 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1291370
+    },
+    {
+      "price": 156.03,
+      "currency": "USD",
+      "date": "Apr 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1300507
+    },
+    {
+      "price": 156.26,
+      "currency": "USD",
+      "date": "Apr 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1309644
+    },
+    {
+      "price": 156.43,
+      "currency": "USD",
+      "date": "May 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1318781
+    },
+    {
+      "price": 156.52,
+      "currency": "USD",
+      "date": "May 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1327918
+    },
+    {
+      "price": 156.58,
+      "currency": "USD",
+      "date": "May 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1337055
+    },
+    {
+      "price": 156.76,
+      "currency": "USD",
+      "date": "May 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1346192
+    },
+    {
+      "price": 157.25,
+      "currency": "USD",
+      "date": "May 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1355329
+    },
+    {
+      "price": 158.21,
+      "currency": "USD",
+      "date": "Jun 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1364466
+    },
+    {
+      "price": 159.7,
+      "currency": "USD",
+      "date": "Jun 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1373603
+    },
+    {
+      "price": 161.64,
+      "currency": "USD",
+      "date": "Jun 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1382740
+    },
+    {
+      "price": 163.82,
+      "currency": "USD",
+      "date": "Jun 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1391877
+    },
+    {
+      "price": 165.91,
+      "currency": "USD",
+      "date": "Jul 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1401014
+    },
+    {
+      "price": 167.6,
+      "currency": "USD",
+      "date": "Jul 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1410151
+    },
+    {
+      "price": 168.64,
+      "currency": "USD",
+      "date": "Jul 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1419288
+    },
+    {
+      "price": 168.93,
+      "currency": "USD",
+      "date": "Jul 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1428425
+    },
+    {
+      "price": 168.54,
+      "currency": "USD",
+      "date": "Aug 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1437562
+    },
+    {
+      "price": 167.68,
+      "currency": "USD",
+      "date": "Aug 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1446699
+    },
+    {
+      "price": 166.66,
+      "currency": "USD",
+      "date": "Aug 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1455836
+    },
+    {
+      "price": 165.79,
+      "currency": "USD",
+      "date": "Aug 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1464973
+    },
+    {
+      "price": 165.28,
+      "currency": "USD",
+      "date": "Aug 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1474110
+    },
+    {
+      "price": 165.24,
+      "currency": "USD",
+      "date": "Sep 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1483247
+    },
+    {
+      "price": 165.63,
+      "currency": "USD",
+      "date": "Sep 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1492384
+    },
+    {
+      "price": 166.29,
+      "currency": "USD",
+      "date": "Sep 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1501521
+    },
+    {
+      "price": 167.08,
+      "currency": "USD",
+      "date": "Sep 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1510658
+    },
+    {
+      "price": 167.84,
+      "currency": "USD",
+      "date": "Oct 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1519795
+    },
+    {
+      "price": 168.54,
+      "currency": "USD",
+      "date": "Oct 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1528932
+    },
+    {
+      "price": 169.24,
+      "currency": "USD",
+      "date": "Oct 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1538069
+    },
+    {
+      "price": 170.05,
+      "currency": "USD",
+      "date": "Oct 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1547206
+    },
+    {
+      "price": 171.11,
+      "currency": "USD",
+      "date": "Nov 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1556343
+    },
+    {
+      "price": 172.49,
+      "currency": "USD",
+      "date": "Nov 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1565480
+    },
+    {
+      "price": 174.17,
+      "currency": "USD",
+      "date": "Nov 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1574617
+    },
+    {
+      "price": 175.96,
+      "currency": "USD",
+      "date": "Nov 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1583754
+    },
+    {
+      "price": 177.64,
+      "currency": "USD",
+      "date": "Nov 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1592891
+    },
+    {
+      "price": 178.91,
+      "currency": "USD",
+      "date": "Dec 01 2025, 04:00 PM UTC-04:00",
+      "volume": 1602028
+    },
+    {
+      "price": 179.56,
+      "currency": "USD",
+      "date": "Dec 08 2025, 04:00 PM UTC-04:00",
+      "volume": 1611165
+    },
+    {
+      "price": 179.48,
+      "currency": "USD",
+      "date": "Dec 15 2025, 04:00 PM UTC-04:00",
+      "volume": 1620302
+    },
+    {
+      "price": 178.76,
+      "currency": "USD",
+      "date": "Dec 22 2025, 04:00 PM UTC-04:00",
+      "volume": 1629439
+    },
+    {
+      "price": 177.63,
+      "currency": "USD",
+      "date": "Jan 01 2026, 04:00 PM UTC-04:00",
+      "volume": 1638576
+    },
+    {
+      "price": 176.4,
+      "currency": "USD",
+      "date": "Jan 08 2026, 04:00 PM UTC-04:00",
+      "volume": 1647713
+    },
+    {
+      "price": 175.41,
+      "currency": "USD",
+      "date": "Jan 15 2026, 04:00 PM UTC-04:00",
+      "volume": 1656850
+    },
+    {
+      "price": 178.42,
+      "currency": "USD",
+      "date": "Jan 22 2026, 04:00 PM UTC-04:00",
+      "volume": 1665987
+    }
+  ]
 }

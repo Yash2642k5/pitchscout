@@ -13,7 +13,25 @@ briefing never shows a "what's missing" item next to a separate question
 list that repeats it.
 """
 
+import os
 from typing import Any
+
+# Groq's per-minute token limit applies to the whole request, so a prompt that drifts
+# past it fails with 413 "Request too large" rather than being queued — a wait does not
+# help, only a smaller prompt does. Every prompt below is therefore fitted to a token
+# budget before it is sent: the evidence block shrinks (fewer items per search, shorter
+# snippets) until the whole prompt is inside the budget. The default leaves room under
+# the 8K/minute limit of Groq's on-demand tier for the model's own reply, which counts
+# against the same window; raise LLM_PROMPT_TOKEN_BUDGET on a tier with a larger one.
+DEFAULT_PROMPT_TOKEN_BUDGET = 5200
+
+# The entity call runs seconds before the analysis call and shares the same per-minute
+# window, so it is kept deliberately small.
+DEFAULT_ENTITY_TOKEN_BUDGET = 2200
+
+# Deliberately low (real English runs nearer 4) so the estimate errs on the high side:
+# over-trimming costs a little detail, under-trimming costs the whole briefing.
+_CHARS_PER_TOKEN = 3.3
 
 GOVERNING_RULE = (
     "You are an analyst assistant. You may use ONLY the evidence items given to you. "
@@ -261,17 +279,59 @@ _PRICING_ROW_SCHEMA = {
     ],
 }
 
-_LISTED_COMPARABLE_SCHEMA = {
+_SHARE_FIGURE_SCHEMA = {
     "type": "object",
     "properties": {
-        "name": {"type": "string"},
-        "ticker": {"type": "string"},
-        "price": {"type": "string", "description": "'Not reported' if absent"},
-        "market_cap": {"type": "string", "description": "'Not reported' if absent"},
-        "price_movement": {"type": "string", "description": "'Not reported' if absent"},
+        "holder": {
+            "type": "string",
+            "description": "Whose share this is - the subject company or a named rival.",
+        },
+        "is_subject": {
+            "type": "boolean",
+            "description": "True only when `holder` is the subject company of this briefing.",
+        },
+        "share_pct": {
+            "type": "number",
+            "description": "The percentage exactly as stated, 0-100. Never estimated or derived.",
+        },
+        "scope": {
+            "type": "string",
+            "description": (
+                "The market the percentage is OF, worded as the source words it, e.g. "
+                "'global enterprise data catalog software'. This is what makes the number "
+                "readable; a bare percentage with no market attached is useless."
+            ),
+        },
+        "period": {"type": "string", "description": "The year or period stated, e.g. '2025'."},
         "evidence": {"type": "array", "items": {"type": "string"}},
     },
-    "required": ["name", "ticker", "price", "market_cap", "price_movement", "evidence"],
+    "required": ["holder", "is_subject", "share_pct", "scope", "period", "evidence"],
+}
+
+_BRAND_VALUE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "period": {"type": "string", "description": "The year the figure is for, e.g. '2024'."},
+        "value_usd_m": {
+            "type": "number",
+            "description": (
+                "The figure in millions of USD, converted only from the unit stated "
+                "($2.1bn -> 2100). Never estimated, inflated or interpolated."
+            ),
+        },
+        "value_text": {"type": "string", "description": "The figure as stated, e.g. '$2.1 billion'."},
+        "basis": {
+            "type": "string",
+            "description": (
+                "What was valued, in the source's own terms: 'brand value', "
+                "'post-money valuation', 'acquisition price', 'market capitalisation'. "
+                "A brand-value ranking and a funding valuation are different things and "
+                "must not be presented as the same series without saying which is which."
+            ),
+        },
+        "evidence": {"type": "array", "items": {"type": "string"}},
+    },
+    "required": ["period", "value_usd_m", "value_text", "basis", "evidence"],
 }
 
 _MISMATCH_SCHEMA = {
@@ -328,6 +388,14 @@ ENTITY_TOOL = {
                     "required": ["name", "domain"],
                 },
             },
+            "subject_ticker": {
+                "type": "string",
+                "description": (
+                    "The SUBJECT company's own listing, formatted TICKER:EXCHANGE, e.g. "
+                    "MSFT:NASDAQ. Empty string if the subject is private, has been acquired, "
+                    "or you are not certain it trades under that symbol today."
+                ),
+            },
             "listed_companies": {
                 "type": "array",
                 "minItems": 0,
@@ -345,7 +413,7 @@ ENTITY_TOOL = {
                 },
             },
         },
-        "required": ["competitors", "listed_companies"],
+        "required": ["competitors", "subject_ticker", "listed_companies"],
     },
 }
 
@@ -382,6 +450,29 @@ ANALYSIS_TOOL = {
             },
             "trajectory": _TRAJECTORY_SCHEMA,
             "risks": {"type": "array", "items": _RISK_ITEM_SCHEMA},
+            "market_position": {
+                "type": "object",
+                "description": (
+                    "Stated figures only, for the industry-share and brand-value charts. "
+                    "Both lists are empty far more often than not, and an empty list is the "
+                    "correct answer whenever no source states a number."
+                ),
+                "properties": {
+                    "share_figures": {
+                        "type": "array",
+                        "minItems": 0,
+                        "maxItems": 6,
+                        "items": _SHARE_FIGURE_SCHEMA,
+                    },
+                    "brand_values": {
+                        "type": "array",
+                        "minItems": 0,
+                        "maxItems": 8,
+                        "items": _BRAND_VALUE_SCHEMA,
+                    },
+                },
+                "required": ["share_figures", "brand_values"],
+            },
             "commercial": {
                 "type": "object",
                 "properties": {
@@ -391,15 +482,9 @@ ANALYSIS_TOOL = {
                         "maxItems": 4,
                         "items": _PRICING_ROW_SCHEMA,
                     },
-                    "listed_comparables": {
-                        "type": "array",
-                        "minItems": 0,
-                        "maxItems": 2,
-                        "items": _LISTED_COMPARABLE_SCHEMA,
-                    },
                     "mismatches": {"type": "array", "items": _MISMATCH_SCHEMA},
                 },
-                "required": ["pricing_comparison", "listed_comparables", "mismatches"],
+                "required": ["pricing_comparison", "mismatches"],
             },
             "diligence": {
                 "type": "array",
@@ -427,6 +512,7 @@ ANALYSIS_TOOL = {
             "news_highlights",
             "trajectory",
             "risks",
+            "market_position",
             "commercial",
             "diligence",
             "scorecard",
@@ -435,13 +521,33 @@ ANALYSIS_TOOL = {
 }
 
 
-def entity_prompt(company: str, website: str, category: str, evidence_items: list[dict]) -> str:
-    evidence_block = _format_evidence(
-        evidence_items,
-        shapes={no: _ENTITY_SHAPE for no in _ENTITY_SEARCH_NOS},
-        default=_ENTITY_SHAPE,
-        only=_ENTITY_SEARCH_NOS,
-    )
+def entity_prompt(
+    company: str,
+    website: str,
+    category: str,
+    evidence_items: list[dict],
+    token_budget: int | None = None,
+) -> str:
+    budget = token_budget or _budget("LLM_ENTITY_PROMPT_TOKEN_BUDGET", DEFAULT_ENTITY_TOKEN_BUDGET)
+    shapes = {no: _ENTITY_SHAPE for no in _ENTITY_SEARCH_NOS}
+
+    def build(current: dict[int, tuple[int, int]]) -> str:
+        return _entity_prompt_text(
+            company,
+            website,
+            category,
+            _format_evidence(
+                evidence_items,
+                shapes=current,
+                default=current.get(_ENTITY_SEARCH_NOS[0], _ENTITY_SHAPE),
+                only=_ENTITY_SEARCH_NOS,
+            ),
+        )
+
+    return _fit(build, shapes, budget)
+
+
+def _entity_prompt_text(company: str, website: str, category: str, evidence_block: str) -> str:
     return (
         f"{GOVERNING_RULE}\n\n"
         f"Company: {company}\nWebsite: {website}\nCategory: {category}\n\n"
@@ -452,7 +558,12 @@ def entity_prompt(company: str, website: str, category: str, evidence_items: lis
         "name the most prominent ones even if the evidence only hints at the category rather "
         "than naming them directly; draw on your own knowledge of the space rather than "
         "settling for obscure or tangential names.\n"
-        "2. Publicly listed companies that are genuinely comparable (0, 1, or 2). This slot is "
+        "2. `subject_ticker`: whether THIS company is itself publicly listed, and under which "
+        "symbol. Return TICKER:EXCHANGE only if you are certain it trades under that symbol "
+        "today; return an empty string for a private company, a subsidiary trading under a "
+        "parent's symbol, or any case you are unsure of. A wrong ticker puts another company's "
+        "share price at the top of this briefing.\n"
+        "3. Publicly listed companies that are genuinely comparable (0, 1, or 2). This slot is "
         "strict, and an empty list is the correct answer more often than not:\n"
         "   - The company must be listed and trading TODAY. Do not name a company that has been "
         "acquired, taken private, or delisted.\n"
@@ -461,7 +572,9 @@ def entity_prompt(company: str, website: str, category: str, evidence_items: lis
         "its share price says nothing about this category.\n"
         "   - If no listed pure-play exists, return an empty list. An empty list is a useful "
         "finding. A loosely related ticker is worse than nothing, because it puts a misleading "
-        "comparable in front of an analyst.\n\n"
+        "comparable in front of an analyst.\n"
+        "   - When the subject is private, the first of these stands in for it on the stock "
+        "chart, labelled as such. Order them best-comparable first.\n\n"
         f"Evidence:\n{evidence_block}\n\n"
         "Call submit_entities with your answer."
     )
@@ -512,15 +625,36 @@ def analysis_prompt(
     category: str,
     evidence_items: list[dict],
     role_mix_note: str | None = None,
+    token_budget: int | None = None,
 ) -> str:
-    """Builds the analysis prompt.
+    """Builds the analysis prompt, fitted to `token_budget`.
 
     `role_mix_note` carries the role mix the pipeline already computed in code from the
     jobs evidence. It is passed in as settled fact so the model reasons from it instead of
     re-deriving it from truncated job snippets and contradicting the number the briefing
     itself displays.
     """
-    evidence_block = _format_evidence(evidence_items)
+    budget = token_budget or _budget("LLM_PROMPT_TOKEN_BUDGET", DEFAULT_PROMPT_TOKEN_BUDGET)
+
+    def build(current: dict[int, tuple[int, int]]) -> str:
+        return _analysis_prompt_text(
+            company,
+            website,
+            category,
+            _format_evidence(evidence_items, shapes=current),
+            role_mix_note,
+        )
+
+    return _fit(build, _SHAPES, budget)
+
+
+def _analysis_prompt_text(
+    company: str,
+    website: str,
+    category: str,
+    evidence_block: str,
+    role_mix_note: str | None,
+) -> str:
     area_block = "\n".join(f"- {area}" for area in DILIGENCE_AREAS)
     computed_block = (
         f"\nAlready established in code from the jobs evidence, treat as fact:\n{role_mix_note}\n"
@@ -559,6 +693,26 @@ def analysis_prompt(
         "reputational, competitive or other. Hunt for lawsuits, regulatory actions, "
         "controversies, complaints and any earlier failed startup — one line per issue, not per "
         "article.\n\n"
+        "Market Position: two sets of figures for the briefing's charts. Both are "
+        "REPORTED-ONLY fields and the strictest in this schema. A number here is put in front "
+        "of an analyst as a measured fact, so it must be one a source in the evidence actually "
+        "printed.\n"
+        "- `share_figures`: every stated percentage share of a market, for this company or a "
+        "named rival. Searches 16 and 18 look for these, but a figure stated anywhere in the "
+        "evidence counts. Copy the percentage exactly, and record in `scope` which market it is "
+        "a share OF, in the source's words.\n"
+        "- `brand_values`: every stated brand value, valuation, acquisition price or market "
+        "capitalisation for THIS company, one row per year. Searches 17 and 18 look for these. "
+        "Convert the stated figure to millions of USD and keep the original wording in "
+        "`value_text`. Say in `basis` what kind of figure it is - a brand-value ranking and a "
+        "funding round valuation measure different things.\n"
+        "- Do NOT estimate, infer, model, interpolate between years, derive a share from "
+        "revenue figures, or carry a number forward from your own knowledge of the company. If "
+        "the evidence states no percentage, `share_figures` is empty; if it states no "
+        "valuation, `brand_values` is empty. An empty chart that says so is correct and "
+        "useful. An invented number is the worst failure in this briefing.\n"
+        "- A figure stated about a different company, a different product line, or a different "
+        "market does not belong in either list.\n\n"
         "Commercial Reality Check: extract pricing from titles and snippets into four "
         "`pricing_comparison` rows — the company, then its three competitors, in that order.\n"
         "- Vendor pricing pages come first but are not the only source. Review sites, comparison "
@@ -571,11 +725,7 @@ def analysis_prompt(
         "- Write 'Not found' only when no evidence carries any figure for that company. If "
         "pricing exists but is quote-only, that is itself the finding — write 'Tiers named, no "
         "public rate' rather than 'Not found'.\n"
-        "- `listed_comparables` is a separate list holding ONLY stock data, built exclusively "
-        "from evidence tagged engine `google_finance`: one row per such item, even if you named "
-        "that company under competitors. Never put pricing data here or stock data in "
-        "`pricing_comparison`. No google_finance evidence means an empty list, not an invented "
-        "row.\n"
+        "- Never put stock data in `pricing_comparison`.\n"
         "Then include a row for each of these four rules that actually fires:\n"
         "- positioning_gap: evidence claims enterprise positioning but the lowest public plan is "
         "self-serve\n"
@@ -633,8 +783,13 @@ _SHAPES: dict[int, tuple[int, int]] = {
     12: (5, 300),   # competitor pricing
     13: (5, 300),
     14: (5, 300),
-    15: (1, 230),   # finance summary
-    16: (1, 230),
+    15: (1, 230),   # finance summary for the stock chart
+    # The share and brand-value figures are the point of these three searches, and the
+    # number is almost always mid-snippet — "...holds 23.4% of the market in 2025..." —
+    # so they get the longest snippets in the table.
+    16: (6, 300),   # stated market share
+    17: (6, 300),   # stated brand value or valuation
+    18: (6, 300),   # same, from news
 }
 _SHAPE_DEFAULT = (6, 150)
 
@@ -683,3 +838,58 @@ def _format_evidence(
         kept_per_search[search_no] = used + 1
         lines.append(_evidence_line(item, snippet_chars))
     return "\n".join(lines) if lines else "(no evidence)"
+
+
+def estimate_tokens(text: str) -> int:
+    """A deliberately pessimistic token count, used to keep a prompt inside its budget."""
+    return int(len(text) / _CHARS_PER_TOKEN) + 1
+
+
+def _budget(env_name: str, default: int) -> int:
+    raw = os.environ.get(env_name, "").strip()
+    try:
+        value = int(raw)
+    except ValueError:
+        return default
+    return value if value > 0 else default
+
+
+def _scaled_shapes(
+    shapes: dict[int, tuple[int, int]], scale: float
+) -> dict[int, tuple[int, int]]:
+    """Shrinks every per-search shape by `scale`, keeping one item and a usable snippet.
+
+    Both dimensions shrink together, so the evidence block falls off roughly with the
+    square of `scale`: a search that contributed six 300-character snippets contributes
+    four 200-character ones at 0.67.
+    """
+    return {
+        no: (max(1, round(items * scale)), max(_MIN_SNIPPET_CHARS, round(chars * scale)))
+        for no, (items, chars) in shapes.items()
+    }
+
+
+_MIN_SNIPPET_CHARS = 55
+# Below this the evidence stops being worth reading; the prompt is sent slightly over
+# budget instead, and the analyzer's 413 handler shrinks it further against Groq's own
+# reported limit if the call is still too large.
+_MIN_SCALE = 0.3
+
+
+def _fit(
+    build: Any,
+    shapes: dict[int, tuple[int, int]],
+    token_budget: int,
+) -> str:
+    """Builds the largest prompt that fits `token_budget`.
+
+    `build` takes a shapes table and returns the finished prompt. Full-size shapes are
+    tried first — most companies never reach the budget — then progressively smaller
+    ones.
+    """
+    scale = 1.0
+    prompt = build(shapes)
+    while estimate_tokens(prompt) > token_budget and scale > _MIN_SCALE:
+        scale = round(scale - 0.05, 2)
+        prompt = build(_scaled_shapes(shapes, scale))
+    return prompt

@@ -27,6 +27,26 @@ def validate_inputs(company: str, website: str, category: str) -> None:
         raise ValidationError(f"Missing required field(s): {', '.join(missing)}")
 
 
+def _stock_subject(
+    company: str, entities: dict[str, Any], listed_companies: list[dict[str, Any]]
+) -> dict[str, Any]:
+    """Picks whose share price heads the briefing.
+
+    The company's own listing when it has one. When it does not, the best listed
+    comparable stands in — a private company has no share price, and an empty
+    chart says less than a named peer's does, provided the panel is plain about
+    whose line it is drawing.
+    """
+    own = str(entities.get("subject_ticker") or "").strip()
+    if own:
+        return {"ticker": own, "is_subject": True, "stands_in_for": ""}
+    for listed in listed_companies:
+        ticker = str(listed.get("ticker") or "").strip()
+        if ticker:
+            return {"ticker": ticker, "is_subject": False, "stands_in_for": company}
+    return {"ticker": "", "is_subject": False, "stands_in_for": ""}
+
+
 async def _run_one(planned: planner.PlannedSearch) -> tuple[planner.PlannedSearch, SerpResponse, datetime]:
     response = await search(planned.engine, planned.params)
     return planned, response, datetime.now(timezone.utc)
@@ -150,16 +170,18 @@ async def run_pipeline_steps(company: str, website: str, category: str, gl: str 
     entities = await analyzer.call_entities(company, website, category, wave1_evidence)
     competitors = entities.get("competitors", [])[:3]
     listed_companies = entities.get("listed_companies", [])[:2]
-    tickers = [lc.get("ticker", "") for lc in listed_companies]
+    subject = _stock_subject(company, entities, listed_companies)
 
     # Steps 5-6: wave 2
-    yield {"progress": 48, "label": "Running 5 more searches"}
-    wave2_searches = planner.plan_wave_2(competitors, tickers, gl)
+    yield {"progress": 48, "label": "Running 7 more searches"}
+    wave2_searches = planner.plan_wave_2(company, category, competitors, subject["ticker"], gl)
     wave2_evidence, wave2_log, wave2_raw = await _run_wave(wave2_searches, id_counter, company, website, category)
 
-    # The trends timeline and the price graphs only exist in the raw responses —
+    # The trends timeline and the price graph only exist in the raw responses —
     # the normalizers reduce both to a sentence — so they are pulled out here.
-    chart_series = series.build_series({**wave1_raw, **wave2_raw}, company, category)
+    chart_series = series.build_series(
+        {**wave1_raw, **wave2_raw}, company, category, planner.STOCK_WINDOW, subject
+    )
 
     all_evidence = wave1_evidence + wave2_evidence
     evidence_map = {item["id"]: item for item in all_evidence}
@@ -191,6 +213,7 @@ async def run_pipeline_steps(company: str, website: str, category: str, gl: str 
         "key_facts": validated["key_facts"],
         "hiring": hiring,
         "market": validated["market"],
+        "market_position": validated["market_position"],
         "competitors": validated["competitors"],
         "news_highlights": validated["news_highlights"],
         "trajectory": validated["trajectory"],

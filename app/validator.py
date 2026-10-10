@@ -187,6 +187,81 @@ def validate_risks(risks: list[dict], evidence_map: dict[str, dict]) -> list[dic
     return out
 
 
+def _year(period: Any) -> int | None:
+    """The first four-digit year in a period string, for ordering a value series."""
+    digits = ""
+    for ch in str(period or ""):
+        digits = digits + ch if ch.isdigit() else ""
+        if len(digits) == 4:
+            year = int(digits)
+            return year if 1900 <= year <= 2100 else None
+    return None
+
+
+def validate_market_position(
+    market_position: dict[str, Any], evidence_map: dict[str, dict]
+) -> dict[str, Any]:
+    """Keeps only share and brand-value figures that survive their citations.
+
+    These two lists drive charts that assert a measured quantity, so the bar is
+    higher than elsewhere: a row with no surviving citation is dropped rather
+    than kept with an empty evidence list, a share outside 0-100 is not a
+    percentage, and a brand value has to be a positive number. Nothing here
+    repairs a figure — an unusable row leaves the chart emptier and honest.
+    """
+    market_position = market_position or {}
+
+    shares = []
+    for row in (market_position.get("share_figures") or [])[:6]:
+        valid_ids = _filter_ids(row.get("evidence", []), evidence_map)
+        if not valid_ids:
+            continue
+        try:
+            pct = float(row.get("share_pct"))
+        except (TypeError, ValueError):
+            continue
+        if not (0 < pct <= 100):
+            continue
+        shares.append(
+            {
+                "holder": row.get("holder", ""),
+                "is_subject": bool(row.get("is_subject")),
+                "share_pct": round(pct, 2),
+                "scope": row.get("scope", ""),
+                "period": row.get("period", ""),
+                "evidence": valid_ids,
+            }
+        )
+    shares.sort(key=lambda r: r["share_pct"], reverse=True)
+
+    values = []
+    for row in (market_position.get("brand_values") or [])[:8]:
+        valid_ids = _filter_ids(row.get("evidence", []), evidence_map)
+        if not valid_ids:
+            continue
+        try:
+            amount = float(row.get("value_usd_m"))
+        except (TypeError, ValueError):
+            continue
+        if amount <= 0:
+            continue
+        values.append(
+            {
+                "period": row.get("period", ""),
+                "year": _year(row.get("period")),
+                "value_usd_m": round(amount, 3),
+                "value_text": row.get("value_text", ""),
+                "basis": row.get("basis", ""),
+                "evidence": valid_ids,
+            }
+        )
+    # A value series is read left to right as time, so it is ordered by year.
+    # Rows whose period carries no year keep their given order at the end.
+    values.sort(key=lambda r: (r["year"] is None, r["year"] or 0))
+
+    return {"share_figures": shares, "brand_values": values}
+
+
 def validate_commercial(commercial: dict[str, Any], evidence_map: dict[str, dict]) -> dict[str, Any]:
     commercial = commercial or {}
 
@@ -203,26 +278,6 @@ def validate_commercial(commercial: dict[str, Any], evidence_map: dict[str, dict
                 "free_tier": row.get("free_tier", "Not found"),
                 "contact_sales_tier": row.get("contact_sales_tier", "Not found"),
                 "pricing_source": source,
-                "evidence": valid_ids,
-            }
-        )
-
-    comparables = []
-    for row in (commercial.get("listed_comparables") or [])[:2]:
-        valid_ids = _filter_ids(row.get("evidence", []), evidence_map)
-        # A listed comparable is only genuine if every citation actually comes from
-        # google_finance evidence — this catches the model mislabeling a competitor's
-        # pricing-page row as a public-market comparable.
-        valid_ids = [i for i in valid_ids if evidence_map[i].get("engine") == "google_finance"]
-        if not valid_ids:
-            continue
-        comparables.append(
-            {
-                "name": row.get("name", ""),
-                "ticker": row.get("ticker", ""),
-                "price": row.get("price", "Not reported"),
-                "market_cap": row.get("market_cap", "Not reported"),
-                "price_movement": row.get("price_movement", "Not reported"),
                 "evidence": valid_ids,
             }
         )
@@ -245,7 +300,6 @@ def validate_commercial(commercial: dict[str, Any], evidence_map: dict[str, dict
 
     return {
         "pricing_comparison": pricing_rows,
-        "listed_comparables": comparables,
         "mismatches": mismatches,
     }
 
@@ -340,6 +394,9 @@ def validate_output(analysis: dict[str, Any], evidence_map: dict[str, dict]) -> 
         "news_highlights": validate_news(analysis.get("news_highlights", []), evidence_map),
         "trajectory": validate_trajectory(analysis.get("trajectory", {}), evidence_map),
         "risks": validate_risks(analysis.get("risks", []), evidence_map),
+        "market_position": validate_market_position(
+            analysis.get("market_position", {}), evidence_map
+        ),
         "commercial": validate_commercial(analysis.get("commercial", {}), evidence_map),
         "diligence": validate_diligence(analysis.get("diligence", []), evidence_map),
         "scorecard": validate_scorecard(analysis.get("scorecard", []), evidence_map),

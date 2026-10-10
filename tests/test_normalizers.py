@@ -31,7 +31,9 @@ FIXTURE_CASES = [
     (13, "google", "search_13_google.json"),
     (14, "google", "search_14_google.json"),
     (15, "google_finance", "search_15_google_finance.json"),
-    (16, "google_finance", "search_16_google_finance.json"),
+    (16, "google", "search_16_google.json"),
+    (17, "google", "search_17_google.json"),
+    (18, "google_news", "search_18_google_news.json"),
 ]
 
 

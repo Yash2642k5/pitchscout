@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PitchScout</title>
+<title>Marser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
@@ -91,7 +91,9 @@
     border-bottom: 1px solid var(--line);
   }
   .bar-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
-  .brand { font-size: 16px; letter-spacing: 0.01em; display: flex; align-items: center; gap: 9px; }
+  .brand { font-size: 16px; letter-spacing: 0.01em; display: flex; align-items: center; gap: 9px; color: var(--paper); text-decoration: none; }
+  .brand:hover { text-decoration: none; color: var(--gold); }
+  .brand:hover i { background: var(--paper); }
   .brand i { width: 9px; height: 9px; border-radius: 50%; background: var(--gold); }
 
   .histbtn {
@@ -641,6 +643,36 @@
   .ch-flat { background: var(--sunk);  color: var(--paper-2); }
   .quote-foot { font-size: 11px; color: var(--paper-3); margin-top: 8px; }
 
+  /* A stand-in ticker is not the company's own, and the briefing must never let
+     that pass unnoticed, so it is flagged in the quote line itself. */
+  .quote .flag {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: var(--r-xs);
+    background: var(--sunk); color: var(--paper-2);
+  }
+
+  /* ---------- Industry share ---------- */
+  .shares { display: flex; flex-direction: column; gap: 13px; }
+  .share-row .share-top { display: flex; align-items: baseline; gap: 8px; }
+  .share-row .share-who { font-size: 13px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .share-row .share-pct { margin-left: auto; font-size: 15px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  /* The track is always the full 100%, so a bar is read against the whole
+     market rather than against the largest figure that happened to surface. */
+  .share-track { height: 9px; margin-top: 6px; border-radius: 999px; background: var(--sunk); overflow: hidden; }
+  .share-track i { display: block; height: 100%; border-radius: 999px; background: var(--paper-3); }
+  .share-row.is-subject .share-track i { background: var(--gold); }
+  .share-row.is-subject .share-pct { color: var(--gold); }
+  .share-foot { font-size: 11px; color: var(--paper-3); margin-top: 5px; display: flex; align-items: center; gap: 6px; }
+
+  /* ---------- A single stated figure ---------- */
+  .solo { padding: 18px 0 6px; }
+  .solo-v { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; }
+  .solo-k { font-size: 11.5px; color: var(--paper-3); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+
+  /* Says what the numbers above are and where they came from. Every chart that
+     reports a figure somebody published carries one. */
+  .chart-foot { font-size: 11px; line-height: 1.5; color: var(--paper-3); margin-top: 12px; }
+
   .read { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
   .read-i { flex: 1 1 128px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--raised); }
   .read-i .k { font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-3); display: flex; align-items: center; gap: 6px; }
@@ -667,7 +699,7 @@
       <span class="bars" aria-hidden="true"><i></i><i></i><i></i></span>
       <span class="lbl">History</span><span class="n" id="hist-n">0</span>
     </button>
-    <div class="brand display"><i></i>PitchScout</div>
+    <a class="brand display" href="/" title="Back to the homepage"><i></i>Marser</a>
   </div>
   <div class="bar-stats">
     <span class="stat">Searches run <b id="stat-used">—</b></span>
@@ -690,7 +722,7 @@
   <main>
     <section class="intake">
       <h1 class="display">New briefing</h1>
-      <p>Sixteen searches across web, news, jobs, trends and finance, read into one source-linked briefing.</p>
+      <p>Eighteen searches across web, news, jobs, trends and finance, read into one source-linked briefing.</p>
       <form class="form" id="form">
         <div class="field">
           <label for="company">Company</label>
@@ -893,6 +925,10 @@ function migrate(b) {
       paragraph: b.company_summary.map((s) => s.text).join(" "),
       evidence: b.company_summary.flatMap((s) => s.evidence || []),
     };
+  }
+  if (!(b.series || {}).stock && ((b.series || {}).prices || []).length) {
+    const q = b.series.prices[0];
+    b.series.stock = Object.assign({}, q, { is_subject: false, stands_in_for: b.company || "" });
   }
   if (!b.diligence && Array.isArray(b.gaps)) {
     b.diligence = b.gaps.map((g) => ({
@@ -1305,7 +1341,7 @@ function marketPanel(b) {
 
 function competitorPanel(b) {
   const rows = (b.competitors || []).map((s) => `<div class="row-i">${esc(s.text)}${srcDot(s.evidence)}</div>`).join("");
-  return `<section class="panel c4" style="--i:5">
+  return `<section class="panel c8" style="--i:5">
     ${head("Competitors")}
     <div class="pbody"><div class="rows">${rows || '<div class="empty">No competitor detail found.</div>'}</div></div>
   </section>`;
@@ -1352,59 +1388,171 @@ function pricingPanel(b) {
   </section>`;
 }
 
-/* The listed comparable, with its intraday tape drawn rather than described.
-   One line, one axis, coloured by direction — lime up, terracotta down. */
-function comparablePanel(b) {
-  const quotes = ((b.series || {}).prices) || [];
-  const comps = (b.commercial || {}).listed_comparables || [];
+/* ------------------------------------------------------------------
+   The three market charts.
 
-  if (!quotes.length && !comps.length) {
+   Only the first of them has an engine behind it: Google Finance returns a
+   real price series. A market share and a brand valuation exist nowhere in
+   SerpApi's structured output, so those two are read out of ordinary web and
+   news results and only ever show a figure some source actually printed. When
+   nothing printed one, the panel says so rather than drawing a plausible
+   shape — an invented line here would be the one lie in a sourced briefing.
+   ------------------------------------------------------------------ */
+
+function stockPanel(b) {
+  const q = (b.series || {}).stock;
+
+  if (!q || !q.points || q.points.length < 2) {
     return `<section class="panel c4" style="--i:8">
-      ${head("Public comparables", "lime")}
-      <div class="pbody"><div class="empty">No listed pure-play comparable in this category, so there is no public multiple to anchor a valuation against.</div></div>
+      ${head("Stock", "lime")}
+      <div class="pbody"><div class="empty">No listed stock was found for this company, and no listed pure-play stands in for it, so there is no price line to draw.</div></div>
     </section>`;
   }
 
-  const blocks = quotes.map((q) => {
-    const up = (q.change_pct || 0) > 0;
-    const down = (q.change_pct || 0) < 0;
-    const color = up ? C.s1 : down ? C.s2 : C.s3;
-    const chCls = up ? "ch-up" : down ? "ch-down" : "ch-flat";
-    const money = (v) => `${q.currency === "USD" ? "$" : ""}${Number(v).toFixed(2)}`;
-    const chart = lineChart({
-      series: [{ name: q.stock || q.name, short: "", color, points: q.points.map((p) => p.price) }],
-      labels: q.points.map((p) => p.label),
-      width: 560,
-      height: 250,
-      pad: { l: 62, r: 12, t: 12, b: 28 },
-      fmt: money,
-      alt: `${q.name} intraday price`,
-    });
-    return `<div style="margin-bottom:14px">
+  // Over a year the quote's own movement is the last session's, which says
+  // nothing about the line on screen, so the window's change is preferred.
+  const pct = q.window_pct != null ? q.window_pct : q.change_pct;
+  const up = (pct || 0) > 0;
+  const down = (pct || 0) < 0;
+  const color = up ? C.s1 : down ? C.s2 : C.s3;
+  const money = (v) => `${q.currency === "USD" ? "$" : ""}${Number(v).toFixed(2)}`;
+
+  const chart = lineChart({
+    series: [{ name: q.stock || q.name, short: "", color, points: q.points.map((p) => p.price) }],
+    labels: q.points.map((p) => p.label),
+    tipLabels: q.points.map((p) => p.full),
+    width: 560,
+    height: 236,
+    pad: { l: 62, r: 12, t: 12, b: 28 },
+    fmt: money,
+    alt: `${q.name} share price over one year`,
+  });
+
+  // Whose line this is has to be unmissable. Three cases, and only the first
+  // of them may be captioned as this company's own year on the market.
+  const whose = q.is_subject
+    ? `${esc(q.name)} · the company's own listing`
+    : q.unverified
+      ? `${esc(q.name)} — the ticker searched for resolved to this company, not ${esc(q.stands_in_for || "the subject")}`
+      : `${esc(q.name)} — stands in${q.stands_in_for ? `, because ${esc(q.stands_in_for)} is not publicly traded` : ""}`;
+
+  return `<section class="panel c4" style="--i:8">
+    ${head("Stock", "lime", `<span class="spacer"></span><span class="n">1 year · Google Finance</span>`)}
+    <div class="pbody">
       <div class="quote">
         <span class="sym">${esc(q.stock || q.name)}</span>
         <span class="ex">${esc(q.exchange)}</span>
+        ${q.is_subject ? "" : `<span class="flag">Stand-in</span>`}
         <span class="px">${q.price != null ? money(q.price) : "—"}</span>
-        ${q.change_pct != null ? `<span class="ch ${chCls}">${q.change_pct > 0 ? "+" : ""}${q.change_pct}%</span>` : ""}
+        ${pct != null ? `<span class="ch ${up ? "ch-up" : down ? "ch-down" : "ch-flat"}">${pct > 0 ? "+" : ""}${pct}%</span>` : ""}
       </div>
       ${chart}
-      <div class="quote-foot">${esc(q.name)} · session range ${q.low != null ? money(q.low) : "—"}–${q.high != null ? money(q.high) : "—"}</div>
-    </div>`;
-  }).join("");
+      <div class="quote-foot">${whose} · year range ${q.low != null ? money(q.low) : "—"}–${q.high != null ? money(q.high) : "—"}</div>
+    </div>
+  </section>`;
+}
 
-  const table = comps.length ? `<div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Company</th><th>Price</th><th>Market cap</th><th>Move</th></tr></thead>
-      <tbody>${comps.map((r) => `<tr>
-        <td class="subj">${esc(r.name)} <span class="nf">${esc(r.ticker)}</span></td>
-        <td>${esc(r.price)}</td>
-        <td>${esc(r.market_cap)}</td>
-        <td>${esc(r.price_movement)}${srcDot(r.evidence)}</td>
-      </tr>`).join("")}</tbody>
-    </table></div>` : "";
+/* Share of industry. A horizontal bar per stated holder, the subject picked
+   out. Bars are drawn against a full 100% track, never normalised to the
+   largest figure found — stretching four partial shares to fill the panel
+   would imply they account for the whole market. */
+function sharePanel(b) {
+  const rows = ((b.market_position || {}).share_figures) || [];
 
-  return `<section class="panel c4" style="--i:8">
-    ${head("Public comparables", "lime")}
-    <div class="pbody">${blocks}${table}</div>
+  if (!rows.length) {
+    return `<section class="panel c4" style="--i:9">
+      ${head("Industry share")}
+      <div class="pbody"><div class="empty">No source in the evidence states a percentage share of this market. SerpApi has no engine that reports share, so an unstated figure stays unstated.</div></div>
+    </section>`;
+  }
+
+  const scope = rows[0].scope;
+  const bars = rows.map((r) => `
+    <div class="share-row${r.is_subject ? " is-subject" : ""}">
+      <div class="share-top">
+        <span class="share-who">${esc(r.holder)}</span>
+        <span class="share-pct">${r.share_pct}%</span>
+      </div>
+      <div class="share-track"><i style="width:${Math.max(Math.min(r.share_pct, 100), 0.6)}%"></i></div>
+      <div class="share-foot">${esc(r.period)}${srcDot(r.evidence)}</div>
+    </div>`).join("");
+
+  return `<section class="panel c4" style="--i:9">
+    ${head("Industry share", "", `<span class="spacer"></span><span class="n">as reported</span>`)}
+    <div class="pbody">
+      <div class="shares">${bars}</div>
+      ${scope ? `<div class="chart-foot">Share of ${esc(scope)}, on the 0–100% track, as stated by the cited source.</div>` : ""}
+    </div>
+  </section>`;
+}
+
+/* Brand value over time. Two or more stated figures make a line; a single one
+   is printed as a figure, because two points are the fewest that can honestly
+   be called "over time". */
+function brandPanel(b) {
+  const rows = ((b.market_position || {}).brand_values) || [];
+
+  if (!rows.length) {
+    return `<section class="panel c4" style="--i:10">
+      ${head("Brand value")}
+      <div class="pbody"><div class="empty">No source in the evidence puts a value on this company. Valuations are published for a small number of companies, and none covering this one surfaced.</div></div>
+    </section>`;
+  }
+
+  const money = (v) => (v >= 1000 ? `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}B` : `$${Math.round(v)}M`);
+  const bases = [...new Set(rows.map((r) => r.basis).filter(Boolean))];
+  // Mixing a brand-value ranking with a funding valuation makes a line that
+  // measures two different things, so the panel names the bases it drew from.
+  const foot = `${bases.length ? esc(bases.join(" · ")) : "as reported"}${bases.length > 1 ? " — different bases, read as separate figures" : ""}`;
+
+  if (rows.length === 1) {
+    const r = rows[0];
+    return `<section class="panel c4" style="--i:10">
+      ${head("Brand value", "", `<span class="spacer"></span><span class="n">as reported</span>`)}
+      <div class="pbody">
+        <div class="solo">
+          <div class="solo-v">${esc(r.value_text || money(r.value_usd_m))}</div>
+          <div class="solo-k">${esc(r.period)}${srcDot(r.evidence)}</div>
+        </div>
+        <div class="chart-foot">${foot}. One figure only — too few to plot a trend.</div>
+      </div>
+    </section>`;
+  }
+
+  const chart = lineChart({
+    series: [{ name: "Value", short: "", color: C.s3, points: rows.map((r) => r.value_usd_m) }],
+    labels: rows.map((r) => r.period),
+    width: 560,
+    height: 198,
+    pad: { l: 62, r: 14, t: 12, b: 28 },
+    fmt: money,
+    alt: "Stated value of the company by year",
+  });
+
+  const first = rows[0];
+  const last = rows[rows.length - 1];
+  const delta = first.value_usd_m > 0
+    ? Math.round(((last.value_usd_m - first.value_usd_m) / first.value_usd_m) * 100)
+    : null;
+
+  return `<section class="panel c4" style="--i:10">
+    ${head("Brand value", "", `<span class="spacer"></span><span class="n">as reported</span>`)}
+    <div class="pbody">
+      ${chart}
+      <div class="read">
+        <div class="read-i">
+          <span class="k">Latest</span>
+          <span class="v">${esc(last.value_text || money(last.value_usd_m))}</span>
+          <span class="k" style="margin-top:4px">${esc(last.period)}${srcDot(last.evidence)}</span>
+        </div>
+        ${delta == null ? "" : `<div class="read-i">
+          <span class="k">Since ${esc(first.period)}</span>
+          <span class="v">${delta >= 0 ? "+" : ""}${delta}%</span>
+          <span class="k" style="margin-top:4px">${esc(first.value_text || money(first.value_usd_m))}</span>
+        </div>`}
+      </div>
+      <div class="chart-foot">${foot}.</div>
+    </div>
   </section>`;
 }
 
@@ -1561,8 +1709,9 @@ function render(raw) {
     heroPanel(b),                                                       // 12
     overviewPanel(b), scorePanel(b),                                    // 8 + 4
     marketPanel(b),                                                     // 12 (chart + read)
+    stockPanel(b), sharePanel(b), brandPanel(b),                        // 4 + 4 + 4
     newsPanel(b), pricingPanel(b),                                      // 4 + 8
-    comparablePanel(b), competitorPanel(b), hiringPanel(b),             // 4 + 4 + 4
+    competitorPanel(b), hiringPanel(b),                                 // 8 + 4
     mismatchPanel(b), riskPanel(b),                                     // 7 + 5
     trajectoryPanel(b),                                                 // 12
     diligencePanel(b),                                                  // 12

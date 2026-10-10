@@ -1,4 +1,4 @@
-"""FastAPI app and the PitchScout endpoints."""
+"""FastAPI app and the Marser endpoints."""
 
 import json
 import os
@@ -19,7 +19,7 @@ from .serp_client import BudgetExceeded  # noqa: E402
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
-app = FastAPI(title="PitchScout")
+app = FastAPI(title="Marser")
 
 
 class BriefingRequest(BaseModel):
@@ -116,6 +116,11 @@ async def get_usage():
 
 
 @app.get("/")
+async def home():
+    return FileResponse(STATIC_DIR / "home.html")
+
+
+@app.get("/app")
 async def index():
     return FileResponse(STATIC_DIR / "index.html")
 

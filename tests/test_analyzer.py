@@ -230,3 +230,80 @@ async def test_call_tool_uses_repair_path_instead_of_retrying(monkeypatch):
     result = await analyzer._call_tool("prompt", TOOL, max_tokens=100, failure_label="Test call")
     assert result == {"ok": "a; b"}
     assert calls["n"] == 1
+
+# --- per-minute token budget --------------------------------------------------
+
+def _too_large_error(limit=8000, requested=8208):
+    request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+    body = {
+        "error": {
+            "message": (
+                "Request too large for model `openai/gpt-oss-120b` ... on tokens per "
+                f"minute (TPM): Limit {limit}, Requested {requested}, please reduce your "
+                "message size and try again."
+            ),
+            "type": "tokens",
+            "code": "rate_limit_exceeded",
+        }
+    }
+    response = httpx.Response(413, request=request, json=body)
+    return groq.APIStatusError("request too large", response=response, body=body)
+
+
+def test_request_too_large_is_recognised_and_its_limit_read():
+    exc = _too_large_error()
+    assert analyzer._is_request_too_large(exc) is True
+    assert analyzer._reported_token_limit(exc) == 8000
+
+
+def test_plain_rate_limit_is_not_treated_as_request_too_large():
+    body = {"error": {"code": "rate_limit_exceeded", "message": "Rate limit reached, try again in 12s"}}
+    assert analyzer._is_request_too_large(_api_error(body)) is False
+
+
+def test_shrunk_budget_aims_under_the_limit_groq_reported():
+    budget = analyzer._shrunk_budget(_too_large_error(), "x" * 27000, 5200)
+    assert budget <= 6000
+    assert budget < 5200  # always smaller than what was just refused
+
+
+@pytest.mark.asyncio
+async def test_call_tool_rebuilds_a_smaller_prompt_after_413(monkeypatch):
+    budgets = []
+
+    def build(budget):
+        budgets.append(budget)
+        return "prompt " * 100
+
+    class FakeClient:
+        class chat:
+            class completions:
+                @staticmethod
+                async def create(**kwargs):
+                    if len(budgets) == 1:
+                        raise _too_large_error()
+                    return _FakeCompletion([_FakeToolCall("submit_entities", '{"ok": "yes"}')])
+
+    monkeypatch.setattr(analyzer, "_client", lambda: FakeClient())
+    result = await analyzer._call_tool(
+        build, TOOL, max_tokens=100, failure_label="Test call", token_budget=5200
+    )
+    assert result == {"ok": "yes"}
+    assert len(budgets) == 2
+    assert budgets[1] < 5200
+
+
+def test_token_window_waits_only_when_the_next_call_would_not_fit():
+    window = analyzer._TokenWindow()
+    assert window.wait_seconds(5000, 8000) == 0.0
+    window.record(5000)
+    # 5000 spent plus 5000 more is over the 8000 window, so the next call has to wait
+    # for the recorded spend to age out.
+    assert window.wait_seconds(5000, 8000) > 0
+    assert window.wait_seconds(2000, 8000) == 0.0
+
+
+def test_token_window_does_not_wait_for_a_call_that_can_never_fit():
+    window = analyzer._TokenWindow()
+    window.record(5000)
+    assert window.wait_seconds(9000, 8000) == 0.0
